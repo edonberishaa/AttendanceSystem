@@ -1,0 +1,39 @@
+﻿@model IEnumerable<Student>
+
+<h2>Students in @ViewBag.SubjectName</h2>
+<table>
+    <thead>
+        <tr>
+            <th>Student Name</th>
+            <th>Fingerprint ID</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model.Any())
+        {
+            @foreach (var student in Model)
+            {
+                <tr>
+                    <td>@student.Name</td>
+                    <td>@student.FingerprintID</td>
+                    <td>
+                        <a href="@Url.Action("RemoveStudent", "Professor", new { subjectId = ViewBag.SubjectId, studentId = student.StudentID })"
+                           onclick="return confirm('Are you sure you want to remove this student from the subject?')">Remove</a>
+                    </td>
+                </tr>
+            }
+        }
+        else
+        {
+            <tr>
+                <td colspan="3">No students are currently registered in this subject.</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<!-- Button to Register a New Student -->
+<a href="@Url.Action("RegisterStudent", "Professor", new { subjectId = ViewBag.SubjectId })">
+    <button>Register Student</button>
+</a>

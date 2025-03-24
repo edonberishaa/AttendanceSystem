@@ -1,0 +1,45 @@
+﻿@model IEnumerable<Subject>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Professor Dashboard</title>
+    <link href="~/css/dashboard.css" rel="stylesheet" /> <!-- Link to external CSS -->
+</head>
+<body>
+
+    <!-- Welcome Message -->
+    @if (User.Identity.IsAuthenticated)
+    {
+        <div class="welcome-message">
+            Welcome, Professor <strong>@User.Identity.Name</strong>
+        </div>
+    }
+
+    <!-- Assigned Subjects Section -->
+    <h3 class="subject-list-title">Your Assigned Subjects:</h3>
+
+    <div class="row">
+        @foreach (var subject in Model)
+        {
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <strong>@subject.SubjectName</strong>
+                    </div>
+                    <div class="card-body">
+                        <a href="@Url.Action("ViewStudents", "Professor", new { subjectId = subject.SubjectID })" class="btn btn-primary btn-custom">
+                            View Students
+                        </a>
+                        <a href="@Url.Action("RegisterStudent", "Professor", new { subjectId = subject.SubjectID })" class="btn btn-success btn-custom">
+                            Register Student
+                        </a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</body>
+</html>

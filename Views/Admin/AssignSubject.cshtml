@@ -1,0 +1,19 @@
+﻿@model Subject
+
+<h2>Assign Subject to Professor</h2>
+<form asp-action="AssignSubject" method="post">
+    <div>
+        <label>Subject ID:</label>
+        <input type="number" name="subjectId" required />
+    </div>
+    <div>
+        <label>Professor:</label>
+        <select name="professorId" required>
+            @foreach (var professor in ViewBag.Professors)
+            {
+                <option value="@professor.Id">@professor.Email</option>
+            }
+        </select>
+    </div>
+    <button type="submit">Assign</button>
+</form>

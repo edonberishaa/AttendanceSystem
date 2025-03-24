@@ -1,0 +1,15 @@
+﻿@model Student
+
+<h2>Edit Student</h2>
+<form asp-action="EditStudent" method="post">
+    <input type="hidden" name="id" value="@Model.StudentID" />
+    <div>
+        <label>Name:</label>
+        <input type="text" name="name" value="@Model.Name" required />
+    </div>
+    <div>
+        <label>Fingerprint ID:</label>
+        <input type="number" name="fingerprintId" value="@Model.FingerprintID" />
+    </div>
+    <button type="submit">Save Changes</button>
+</form>

@@ -1,0 +1,16 @@
+﻿@model IEnumerable<Student>
+
+<h2>Register Students to @ViewBag.SubjectName</h2>
+<form asp-action="RegisterStudent" method="post">
+    <input type="hidden" name="subjectId" value="@ViewBag.SubjectId" />
+    <div>
+        <label>Select Student:</label>
+        <select name="studentId" required>
+            @foreach (var student in Model)
+            {
+                <option value="@student.StudentID">@student.Name (Fingerprint ID: @student.FingerprintID)</option>
+            }
+        </select>
+    </div>
+    <button type="submit">Register</button>
+</form>

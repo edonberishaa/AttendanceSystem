@@ -1,0 +1,31 @@
+﻿@model IEnumerable<Student>
+
+<h2>Student List</h2>
+<a asp-controller="Student" asp-action="AddStudent">Add New Student
+</a>
+
+<table>
+    <thead>
+        <tr>
+            <th>Student ID</th>
+            <th>Name</th>
+            <th>Fingerprint ID</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var student in Model)
+        {
+            <tr>
+                <td>@student.StudentID</td>
+                <td>@student.Name</td>
+                <td>@student.FingerprintID</td>
+                <td>
+                    <a href="@Url.Action("EditStudent", "Student", new { id = student.StudentID })">Edit</a> |
+                    <a href="@Url.Action("DeleteStudent", "Student", new { id = student.StudentID })"
+                       onclick="return confirm('Are you sure you want to delete this student?')">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

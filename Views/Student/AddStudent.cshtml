@@ -1,0 +1,18 @@
+﻿@model Student
+
+<h2>Add New Student</h2>
+<form asp-action="AddStudent" method="post">
+    <div>
+        <label>Name:</label>
+        <input type="text" name="name" required />
+    </div>
+    <div>
+        <label>Fingerprint ID:</label>
+        <input type="number" name="fingerprintId" />
+    </div>
+    <button type="submit">Add Student</button>
+    @if(TempData["Message"] != null)
+    {
+        <div class="alert alert-success">@TempData["Message"]</div>
+    }
+</form>
