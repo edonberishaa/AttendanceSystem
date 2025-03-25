@@ -1,0 +1,86 @@
+﻿@model IEnumerable<Attendance>
+
+@{
+    ViewData["Title"] = "Attendance Dashboard";
+}
+
+<h2>Attendance Dashboard for @ViewBag.SubjectName</h2>
+
+<!-- Filter Form -->
+<form asp-action="AttendanceDashboard" method="get">
+    <input type="hidden" name="subjectId" value="@ViewBag.SubjectId" />
+
+    <div>
+        <label>Filter by Date:</label>
+        <input type="date" name="date" />
+    </div>
+
+    <div>
+        <label>Filter by Week:</label>
+        <select name="week">
+            <option value="">-- Select Week --</option>
+            @for (int i = 1; i <= 15; i++)
+            {
+                <option value="@i">Week @i</option>
+            }
+        </select>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Apply Filter</button>
+</form>
+
+<hr />
+
+<!-- Attendance Records Table -->
+@if (Model.Any())
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Student Name</th>
+                <th>Fingerprint ID</th>
+                <th>Attendance Status</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var record in Model)
+            {
+                <tr>
+                    <td>@record.Student.Name</td>
+                    <td>@record.Student.FingerprintID</td>
+                    <td>@(record.Present ? "Present" : "Absent")</td>
+                    <td>@record.LessonDate.ToShortDateString()</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <!-- Export to Excel Button -->
+    <h3>Export Attendance Data</h3>
+    <form asp-action="ExportAttendanceToExcel" method="get">
+        <input type="hidden" name="subjectId" value="@ViewBag.SubjectId" />
+
+        <div>
+            <label>Select Week to Export:</label>
+            <select name="week">
+                <option value="">-- Select Week --</option>
+                @for (int i = 1; i <= 15; i++)
+                {
+                    <option value="@i">Week @i</option>
+                }
+            </select>
+        </div>
+
+        <div>
+            <label>Or Select Date to Export:</label>
+            <input type="date" name="date" />
+        </div>
+
+        <button type="submit" class="btn btn-success">Export to Excel</button>
+    </form>
+}
+else
+{
+    <p>No attendance records found for the selected filters.</p>
+}
