@@ -12,13 +12,63 @@ html {
   box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
 }
 
-html {
-  position: relative;
-  min-height: 100%;
+body {
+    display: flex;
+    flex-direction: row;
 }
 
-body {
-  margin-bottom: 60px;
+.navigation {
+    width: 350px;
+    height: 100vh;
+    background-color: #1e1e1e;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.list {
+    width: 80%;
+    margin: 15px auto;
+    h6 {
+           color: #b0b0b0;
+       }
+    ul {
+        padding: 0;
+        a
+        {
+            padding: 10px 20px;
+            margin-bottom: 5px;
+            display: flex;
+            flex-direction: row;
+            border-radius: 15px;
+            text-decoration: none;
+            color: #b0b0b0;
+            background-color: #333;
+            li
+            {
+                list-style: none;
+                display: flex;
+                flex-direction: row;
+                .list-logo
+                {
+                    width: 30px;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                }
+            }
+        }
+    }
+}
+
+.navbar-brand {
+    margin: 25px 0 35px 0;
+}
+
+.content {
+    width: 100%;
+    background-color: #121212;
 }
 
 .form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
@@ -28,4 +78,78 @@ body {
 
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
   text-align: start;
+}
+
+/*.navbar > .container-fluid {
+    max-width: 1200px;
+}
+
+@media (min-width: 1400px) {
+    .container, .container-lg, .container-md, .container-sm, .container-xl, .container-xxl {
+        max-width: 1200px;
+    }
+}*/
+
+.navbar-toggler {
+    border: none;
+    box-shadow: none;
+    &:focus
+
+{
+    box-shadow: none;
+}
+
+}
+
+.bg-img {
+    background-image: url(../img/bg-img.webp);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.bg-glass {
+    background: rgba( 255, 255, 255, 0.2 );
+    box-shadow: 0 8px 32px 0 rgba( 31, 38, 135, 0.37 );
+    backdrop-filter: blur( 4px );
+    -webkit-backdrop-filter: blur( 4px );
+    border: 1px solid rgba( 255, 255, 255, 0.18 );
+    color: #fff;
+}
+
+.form-floating > .form-control:focus ~ label::after {
+    background-color: transparent;
+    color: var(--bs-secondary-color);
+}
+
+.form-check-input {
+    --bs-form-check-bg: rgba( 255, 255, 255, 0.2 );
+    backdrop-filter: blur( 4px );
+    border: none;
+}
+
+.form-check-input:focus {
+    box-shadow: none;
+    border: none;
+}
+
+.bg-trans::after {
+    background-color: rgba( 255, 255, 255, 0.2 ) !important;
+    backdrop-filter: blur( 4px );
+}
+
+.form-control:focus {
+    box-shadow: 4px 4px 4px 0.1rem white;
+}
+
+.txt-white {
+    color: #fff;
+}
+
+.txt-white:hover {
+    color: #bbb;
+}
+
+.navbar-brand {
+    
 }

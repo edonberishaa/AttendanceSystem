@@ -12,7 +12,7 @@
 
     <div>
         <label>Filter by Date:</label>
-        <input type="date" name="date" />
+        <input type="date" name="date"/>
     </div>
 
     <div>
@@ -50,7 +50,7 @@
                     <td>@record.Student.Name</td>
                     <td>@record.Student.FingerprintID</td>
                     <td>@(record.Present ? "Present" : "Absent")</td>
-                    <td>@record.LessonDate.ToShortDateString()</td>
+                    <td>@record.LessonDate.ToString("dd/MM/yyyy")</td>
                 </tr>
             }
         </tbody>

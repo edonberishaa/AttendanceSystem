@@ -7,9 +7,11 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using AttendanceSystem.Data;
 using AttendanceSystem.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace AttendanceSystem.Controllers
 {
+    [Authorize]
     public class SubjectsController : Controller
     {
         private readonly AppDbContext _context;
@@ -59,7 +61,7 @@ namespace AttendanceSystem.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("SubjectID,SubjectName,ProfessorID")] Subject subject)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
                 var professorExists = await _context.Users.AnyAsync(u => u.Id == subject.ProfessorID);
                 if (!professorExists)
