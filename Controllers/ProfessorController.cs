@@ -261,7 +261,7 @@ namespace AttendanceSystem.Controllers
                 foreach(var record in records)
                 {
                     worksheet.Cell(row, 1).Value = record.Student.Name;
-                    worksheet.Cell(row, 2).Value = record.LessonDate.ToShortDateString();
+                    worksheet.Cell(row, 2).Value = record.LessonDate.ToString("dd/MM/yyyy");
                     worksheet.Cell(row, 3).Value = record.Present ? "1" : "0";
                     row++;
                 }
@@ -274,7 +274,7 @@ namespace AttendanceSystem.Controllers
                     return File(
                         content,
                         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                        $"Attendance_Week{week}_{subject.SubjectName}.xlsx"
+                        $"Attendance_Date{date}_{subject.SubjectName}.xlsx"
                         );
                 }
             }

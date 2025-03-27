@@ -8,12 +8,17 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/AttendanceSystem.styles.css" asp-append-version="true" />
+    <link rel="icon" type="image/png" href="~/favicon.png" />
+    <script src="https://kit.fontawesome.com/fc770c52cb.js" crossorigin="anonymous"></script>
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+    @* <header>
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-dark mb-3">
             <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">AttendanceSystem</a>
+                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">
+                    <img src="~/favicon.png" alt="Logo" width="30" height="30" class="d-inline-block align-text-top" />
+                    Fingerprint Attendance System
+                </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                 aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
@@ -21,17 +26,19 @@
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
                         </li>
                         @if (User.Identity.IsAuthenticated)
                         {
-                            <li class="nav-item">
-                                <a class="nav-link">Hello, @User.Identity.Name</a>
-                            </li>
-                            <li class="nav-item">
-                                <form method="post" asp-controller="Account" asp-action="Logout">
-                                    <button type="submit" class="btn btn-link nav-link">Logout</button>
-                                </form>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false">Hello, @User.Identity.Name</a>
+                                <ul class="dropdown-menu">
+                                    <li class="dropdown-item">
+                                        <form method="post" asp-controller="Account" asp-action="Logout">
+                                            <button type="submit" class="btn btn-link nav-link">Log out</button>
+                                        </form>
+                                    </li>
+                                </ul>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link" asp-controller="Professor" asp-action="Dashboard">Dashboard</a>
@@ -50,18 +57,69 @@
                 </div>
             </div>
         </nav>
-    </header>
-    <div class="container">
+    </header> *@
+    <div class="navigation">
+        <a asp-controller="Home" asp-action="Index" class="navbar-brand">
+            <img src="~/favicon.png" alt="Logo" class="logo" width="30px" height="30px" class="d-inline-block align-text-top"/>
+            Fingerprint Attendance System
+        </a>
+        <div class="list">
+            <h6>MENU</h6>
+            <ul>
+                <a asp-controller="Home" asp-action="Index">
+                    <li>
+                        <div class="list-logo">
+                            <i class="fa-solid fa-house"></i>
+                        </div>
+                        Dashboard
+                    </li>
+                </a>
+                <a asp-controller="Admin" asp-action="AssignSubject">
+                    <li>
+                        <div class="list-logo">
+                            <i class="fa-solid fa-graduation-cap"></i>
+                        </div>
+                        Professors
+                    </li>
+                </a>
+                <a asp-controller="Student" asp-action="AllStudents">
+                    <li>
+                        <div class="list-logo">
+                        <i class="fa-solid fa-user-graduate"></i>
+                        </div>
+                        Students                
+                    </li>
+                </a>
+                <a asp-controller="Professor" asp-action="Dashboard">
+                    <li>
+                        <div class="list-logo">
+                        <i class="fa-solid fa-users"></i>
+                        </div>
+                        Attendance               
+                    </li>
+                </a>
+                <a asp-controller="Subjects" asp-action="Index">
+                    <li>
+                        <div class="list-logo">
+                        <i class="fa-solid fa-book"></i>
+                        </div>
+                        Subjects              
+                    </li>
+                </a>
+            </ul>
+        </div>
+    </div>
+    <div class="content">
         <main role="main" class="pb-3">
             @RenderBody()
         </main>
     </div>
 
-    <footer class="border-top footer text-muted">
+   @*  <footer class="border-top footer text-muted">
         <div class="container">
             &copy; 2025 - AttendanceSystem - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
         </div>
-    </footer>
+    </footer> *@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
