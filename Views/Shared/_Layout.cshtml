@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - AttendanceSystem</title>
+    <title>@ViewData["Title"] - Fingerprint Attendance</title>
     <script type="importmap"></script>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
@@ -12,61 +12,15 @@
     <script src="https://kit.fontawesome.com/fc770c52cb.js" crossorigin="anonymous"></script>
 </head>
 <body>
-    @* <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-dark mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">
-                    <img src="~/favicon.png" alt="Logo" width="30" height="30" class="d-inline-block align-text-top" />
-                    Fingerprint Attendance System
-                </a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        @if (User.Identity.IsAuthenticated)
-                        {
-                            <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false">Hello, @User.Identity.Name</a>
-                                <ul class="dropdown-menu">
-                                    <li class="dropdown-item">
-                                        <form method="post" asp-controller="Account" asp-action="Logout">
-                                            <button type="submit" class="btn btn-link nav-link">Log out</button>
-                                        </form>
-                                    </li>
-                                </ul>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" asp-controller="Professor" asp-action="Dashboard">Dashboard</a>
-                            </li>
-                        }
-                        else
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link" asp-controller="Account" asp-action="Login">Login</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" asp-controller="Account" asp-action="Register">Register</a>
-                            </li>
-                        }
-                    </ul>
-                </div>
-            </div>
-        </nav>
-    </header> *@
     <div class="navigation">
         <a asp-controller="Home" asp-action="Index" class="navbar-brand">
             <img src="~/favicon.png" alt="Logo" class="logo" width="30px" height="30px" class="d-inline-block align-text-top"/>
-            Fingerprint Attendance System
+            Fingerprint Attendance
         </a>
         <div class="list">
             <h6>MENU</h6>
             <ul>
-                <a asp-controller="Home" asp-action="Index">
+                <a asp-controller="Home" asp-action="Index" class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Home" ? "active" : "")">
                     <li>
                         <div class="list-logo">
                             <i class="fa-solid fa-house"></i>
@@ -74,7 +28,7 @@
                         Dashboard
                     </li>
                 </a>
-                <a asp-controller="Admin" asp-action="AssignSubject">
+                <a asp-controller="Admin" asp-action="AssignSubject" class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Admin" ? "active" : "")">
                     <li>
                         <div class="list-logo">
                             <i class="fa-solid fa-graduation-cap"></i>
@@ -82,26 +36,26 @@
                         Professors
                     </li>
                 </a>
-                <a asp-controller="Student" asp-action="AllStudents">
+                <a asp-controller="Student" asp-action="AllStudents" class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Student" ? "active" : "")">
                     <li>
                         <div class="list-logo">
-                        <i class="fa-solid fa-user-graduate"></i>
+                            <i class="fa-solid fa-user-graduate"></i>
                         </div>
                         Students                
                     </li>
                 </a>
-                <a asp-controller="Professor" asp-action="Dashboard">
+                <a asp-controller="Professor" asp-action="Dashboard" class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Professor" ? "active" : "")">
                     <li>
                         <div class="list-logo">
-                        <i class="fa-solid fa-users"></i>
+                            <i class="fa-solid fa-users"></i>
                         </div>
                         Attendance               
                     </li>
                 </a>
-                <a asp-controller="Subjects" asp-action="Index">
+                <a asp-controller="Subjects" asp-action="Index" class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Subjects" ? "active" : "")">
                     <li>
                         <div class="list-logo">
-                        <i class="fa-solid fa-book"></i>
+                            <i class="fa-solid fa-book"></i>
                         </div>
                         Subjects              
                     </li>
@@ -110,6 +64,26 @@
         </div>
     </div>
     <div class="content">
+        <div class="account">
+            @if (User.Identity.IsAuthenticated)
+            {
+                <a href="#" class="dropdown-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <div>
+                        <h6>@User.Identity.Name</h6>
+                        <p>Admin</p>
+                    </div>
+                    <img src="~/img/user.png" alt="Alternate Text" />
+                </a>
+                <ul class="dropdown-menu">
+                    <li class="dropdown-item">
+                        <form method="post" asp-controller="Account" asp-action="Logout">
+                            <button type="submit" class="btn btn-link nav-link">Log out</button>
+                        </form>
+                    </li>
+                </ul>
+            }
+            
+        </div>
         <main role="main" class="pb-3">
             @RenderBody()
         </main>
