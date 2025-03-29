@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using AttendanceSystem.Data;
 using AttendanceSystem.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -8,16 +9,19 @@ namespace AttendanceSystem.Controllers
     [Authorize]
     public class HomeController : Controller
     {
+        private readonly AppDbContext _context;
         private readonly ILogger<HomeController> _logger;
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(AppDbContext context, ILogger<HomeController> logger)
         {
+            _context = context;
             _logger = logger;
         }
 
         public IActionResult Index()
         {
-            return View();
+            var students = _context.Students.Count();
+            return View(students);
         }
 
         public IActionResult Privacy()
