@@ -15,7 +15,7 @@
         </div>
         <div>
             <label for="fingerprintId">Fingerprint ID:</label>
-            <input type="text" id="fingerprintId" name="fingerprintId" readonly />
+            <input type="text" id="fingerprintId" name="fingerprintId" />
             <button type="button" id="enrollButton">Enroll</button>
         </div>
         <button type="submit">Add Student</button>
@@ -33,9 +33,10 @@
         const statusMessage = document.getElementById("statusMessage");
         const fingerprintInput = document.getElementById("fingerprintId");
 
-        const connection = new signalR.HubConnectionBuilder()
-            .withUrl("/arduinoHub")
-            .build();
+            const connection = new signalR.HubConnectionBuilder()
+        .withUrl("/ArduinoHub") // <-- must match your `MapHub` route
+        .build();
+
 
         // Initial check to see if Arduino is already connected
         fetch("/Student/IsArduinoConnected")
@@ -53,7 +54,7 @@
 
         // Enroll trigger
         document.getElementById("enrollButton").addEventListener("click", function () {
-            fetch("/Student/EnrollFingerprint", { method: "POST" })
+            fetch("/Student/TriggerEnrollment", { method: "POST" })
                 .then(response => response.json())
                 .then(data => {
                     if (!data.success) {

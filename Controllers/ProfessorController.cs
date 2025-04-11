@@ -1,6 +1,6 @@
 ﻿using AttendanceSystem.Data;
+using AttendanceSystem.Hubs;
 using AttendanceSystem.Models;
-using AttendanceSystem.Services;
 using ClosedXML.Excel;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -17,16 +17,16 @@ namespace AttendanceSystem.Controllers
         private readonly AppDbContext _context;
         private static SerialPort _serialPort;
         private static ConcurrentQueue<string> SerialLogs = new ConcurrentQueue<string>();
-        private readonly IHubContext<SerialHub> _hubContext;
+        private readonly IHubContext<ArduinoHub> _arduinoHub;
 
         public static class ArduinoHelper
         {
             public static bool IsConnected = false;
         }
-        public ProfessorController(AppDbContext context, IHubContext<SerialHub> hubContext)
+        public ProfessorController(AppDbContext context, IHubContext<ArduinoHub> arduinoHub)
         {
             _context = context;
-            _hubContext = hubContext;
+            _arduinoHub = arduinoHub;
             Task.Run(() => InitializeSerialPort());
         }
         
@@ -351,7 +351,7 @@ namespace AttendanceSystem.Controllers
                     SerialLogs.Enqueue(response); // Store message in log
 
                     Console.WriteLine("Received from Arduino: " + response);
-                    _hubContext.Clients.All.SendAsync("ReceiveSerialLog", response);
+                    _arduinoHub.Clients.All.SendAsync("ReceiveSerialLog", response);
                 }
             }
             catch (Exception ex)

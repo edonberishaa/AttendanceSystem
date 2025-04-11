@@ -7,6 +7,7 @@ using System.Collections.Concurrent;
 using Microsoft.AspNetCore.SignalR;
 using AttendanceSystem.Services;
 using NuGet.Packaging.Core;
+using AttendanceSystem.Hubs;
 
 namespace AttendanceSystem.Controllers
 {
@@ -16,12 +17,12 @@ namespace AttendanceSystem.Controllers
         private readonly ArduinoService _arduino;
         private readonly AppDbContext _context;
         private static ConcurrentQueue<string> SerialLogs = new ConcurrentQueue<string>();
-        private readonly IHubContext<SerialHub> _hubContext;
+        private readonly IHubContext<ArduinoHub> _arduinoContext;
 
-        public StudentController(AppDbContext context, IHubContext<SerialHub> hubContext, ArduinoService arduino)
+        public StudentController(AppDbContext context, IHubContext<ArduinoHub> hubContext, ArduinoService arduino)
         {
             _context = context;
-            _hubContext = hubContext;
+            _arduinoContext = hubContext;
             _arduino = arduino;
         }
 
@@ -94,7 +95,6 @@ namespace AttendanceSystem.Controllers
             _context.SaveChanges();
             return RedirectToAction("AllStudents");
         }
-
         [HttpGet]
         public JsonResult GetArduinoStatus()
         {
@@ -110,6 +110,12 @@ namespace AttendanceSystem.Controllers
                 success,
                 message = success ? "Started fingerprint enrollment." : "Could not connect to Arduino."
             });
+        }
+        [HttpGet]
+        public IActionResult IsArduinoConnected()
+        {
+            bool isConnected = _arduino.IsArduinoConnected();
+            return Json(new {connected = isConnected});
         }
 
 

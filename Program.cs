@@ -1,4 +1,5 @@
 using AttendanceSystem.Data;
+using AttendanceSystem.Hubs;
 using AttendanceSystem.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -58,7 +59,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapStaticAssets();
-app.MapHub<SerialHub>("/arduinoHub"); // ? Map SerialHub
+app.MapHub<ArduinoHub>("/ArduinoHub");
 
 // Default Route
 app.MapControllerRoute(
