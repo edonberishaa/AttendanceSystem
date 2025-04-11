@@ -1,6 +1,7 @@
 ﻿using AttendanceSystem.Data;
 using AttendanceSystem.Hubs;
 using AttendanceSystem.Models;
+using AttendanceSystem.Services;
 using ClosedXML.Excel;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -14,8 +15,9 @@ namespace AttendanceSystem.Controllers
     [Authorize]
     public class ProfessorController : Controller
     {
+        private readonly ArduinoService _arduino;
         private readonly AppDbContext _context;
-        private static SerialPort _serialPort;
+        private static SerialPort? _serialPort;
         private static ConcurrentQueue<string> SerialLogs = new ConcurrentQueue<string>();
         private readonly IHubContext<ArduinoHub> _arduinoHub;
 
@@ -23,18 +25,18 @@ namespace AttendanceSystem.Controllers
         {
             public static bool IsConnected = false;
         }
-        public ProfessorController(AppDbContext context, IHubContext<ArduinoHub> arduinoHub)
+        public ProfessorController(AppDbContext context, IHubContext<ArduinoHub> arduinoHub,ArduinoService arduino)
         {
             _context = context;
             _arduinoHub = arduinoHub;
-            Task.Run(() => InitializeSerialPort());
+            _arduino  =arduino;
         }
-        
-        public IActionResult RegisterStudent(int subjectId)
+        [HttpPost]
+        public async Task<IActionResult> StartSession(int subjectId)
         {
             var professorEmail = User.Identity.Name;
-
             var professor = _context.Users.FirstOrDefault(u => u.Email == professorEmail);
+
             if (professor == null)
             {
                 return NotFound("Professor not found.");
@@ -45,21 +47,180 @@ namespace AttendanceSystem.Controllers
             {
                 return NotFound("Subject not found or not assigned to you.");
             }
-
-            ViewBag.SubjectID = subjectId;
-            ViewBag.SubjectName = subject.SubjectName;
-
-            var registeredStudentIds = _context.Attendances
-                .Where(a => a.SubjectID == subjectId)
-                .Select(a => a.StudentID)
-                .ToList();
-
-            var unregisteredStudents = _context.Students
-                .Where(s => !registeredStudentIds.Contains(s.StudentID))
-                .ToList();
-
-            return View(unregisteredStudents);
+            var session = _context.SessionStates.FirstOrDefault(s => s.SubjectID == subjectId);
+            if(session == null)
+            {
+                session = new SessionState
+                {
+                    SubjectID = subjectId,
+                    IsActive = true,
+                    StartDate = DateTime.Now
+                };
+                _context.SessionStates.Add(session);
+            }
+            else
+            {
+                session.IsActive = true;
+                session.StartDate = DateTime.Now;
+                session.EndDate = null;
+            }
+            await _context.SaveChangesAsync();
+            await _arduinoHub.Clients.All.SendAsync("SessionStarted", subjectId);
+            bool success = _arduino.SendCommand("Verify");
+            return RedirectToAction("AttendanceDashboard", new { subjectId });
         }
+
+        [HttpPost]
+        public async Task<IActionResult> EndSession(int subjectId)
+        {
+            var professorEmail = User.Identity.Name;
+            var professor = _context.Users.FirstOrDefault(u => u.Email == professorEmail);
+
+            if (professor == null)
+            {
+                return NotFound("Professor not found.");
+            }
+
+            var subject = _context.Subjects.FirstOrDefault(s => s.SubjectID == subjectId && s.ProfessorID == professor.Id);
+            if (subject == null)
+            {
+                return NotFound("Subject not found or not assigned to you.");
+            }
+            var session = _context.SessionStates.FirstOrDefault(s => s.SubjectID == subjectId);
+            
+            if(session !=null && session.IsActive)
+            {
+                session.IsActive = false;
+                session.EndDate = DateTime.Now;
+
+                var enrolledStudents = _context.Attendances
+                    .Where(a => a.SubjectID == subjectId)
+                    .Select(a => a.StudentID)
+                    .Distinct()
+                    .ToList();
+                var lessonDate = DateTime.Today;
+
+                foreach(var studentId in enrolledStudents)
+                {
+                    var attendaceRecord = _context.Attendances
+                        .FirstOrDefault(a =>
+                        a.StudentID == studentId &&
+                        a.SubjectID == subjectId &&
+                        a.LessonDate == lessonDate);
+
+                    if(attendaceRecord == null)
+                    {
+                        _context.Attendances.Add(new Attendance
+                        {
+                            StudentID = studentId,
+                            SubjectID = subjectId,
+                            LessonDate = lessonDate,
+                            Present = false
+                        });
+                    }
+                    else if(!attendaceRecord.Present)
+                    {
+                        attendaceRecord.Present = false;
+                    }
+                }
+                await _context.SaveChangesAsync();
+                await _arduinoHub.Clients.All.SendAsync("SessionEnded", subjectId);
+                bool success = _arduino.SendCommand("endsession");
+            }
+            return RedirectToAction("AttendanceDashboard", new { subjectId });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> VerifyFingerprint(int fingerprintId, int subjectId)
+        {
+            var professorEmail = User.Identity.Name;
+            var professor = _context.Users.FirstOrDefault(u => u.Email == professorEmail);
+            if (professor == null)
+            {
+                return NotFound("Professor not found.");
+            }
+
+            var subject = _context.Subjects.FirstOrDefault(s => s.SubjectID == subjectId && s.ProfessorID == professor.Id);
+            if (subject == null)
+            {
+                return NotFound("Subject not found or not assigned to you!");
+            }
+
+            var session = _context.SessionStates.FirstOrDefault(s => s.SubjectID == subjectId && s.IsActive);
+            if (session == null || !session.IsActive)
+            {
+                return Json(new { success = false, message = "Session is not active. Cannot mark attendance." });
+            }
+
+            var student = await _context.Students.FirstOrDefaultAsync(s => s.FingerprintID == fingerprintId);
+            if (student == null)
+            {
+                return Json(new { success = false, message = "Student not found with the provided fingerprint ID." });
+            }
+            var enrollment = await _context.Attendances
+                .FirstOrDefaultAsync(a => a.StudentID == student.StudentID && a.SubjectID == subjectId);
+
+            if (enrollment == null)
+            {
+                return Json(new { success = false, message = "Student is not enrolled in this subject." });
+            }
+
+            var lessonDate = DateTime.Today;
+
+            var attendanceRecord = await _context.Attendances
+                .FirstOrDefaultAsync(a =>
+                    a.StudentID == student.StudentID &&
+                    a.SubjectID == subjectId &&
+                    a.LessonDate == lessonDate);
+
+            if (attendanceRecord == null)
+            {
+                attendanceRecord = new Attendance
+                {
+                    StudentID = student.StudentID,
+                    SubjectID = subjectId,
+                    LessonDate = lessonDate,
+                    Present = true
+                };
+                _context.Attendances.Add(attendanceRecord);
+            }
+            else
+            {
+                attendanceRecord.Present = true;
+            }
+            await _context.SaveChangesAsync();
+            return Json(new { success = true, message = "Attendace marked successfully" });
+        }
+                public IActionResult RegisterStudent(int subjectId)
+                {
+                    var professorEmail = User.Identity.Name;
+
+                    var professor = _context.Users.FirstOrDefault(u => u.Email == professorEmail);
+                    if (professor == null)
+                    {
+                        return NotFound("Professor not found.");
+                    }
+
+                    var subject = _context.Subjects.FirstOrDefault(s => s.SubjectID == subjectId && s.ProfessorID == professor.Id);
+                    if (subject == null)
+                    {
+                        return NotFound("Subject not found or not assigned to you.");
+                    }
+
+                    ViewBag.SubjectID = subjectId;
+                    ViewBag.SubjectName = subject.SubjectName;
+
+                    var registeredStudentIds = _context.Attendances
+                        .Where(a => a.SubjectID == subjectId)
+                        .Select(a => a.StudentID)
+                        .ToList();
+
+                    var unregisteredStudents = _context.Students
+                        .Where(s => !registeredStudentIds.Contains(s.StudentID))
+                        .ToList();
+
+                    return View(unregisteredStudents);
+                }
         [HttpPost]
         public IActionResult RegisterStudent(int subjectId, int studentId)
         {
@@ -207,7 +368,7 @@ namespace AttendanceSystem.Controllers
                 attendanceQuery = attendanceQuery.Where(a => a.LessonDate >= startDate && a.LessonDate <= endDate);
             }
             var attendanceRecords = attendanceQuery.ToList();
-
+            
             return View(attendanceRecords);
         }
 
@@ -301,65 +462,6 @@ namespace AttendanceSystem.Controllers
             return Json(new { status = isConnected ? "connected" : "waiting" });
         }
 
-        private async Task InitializeSerialPort()
-        {
-            string arduinoPort = null;
-            string[] previousPorts = SerialPort.GetPortNames();
-
-            while (arduinoPort == null)
-            {
-                string[] currentPorts = SerialPort.GetPortNames();
-                arduinoPort = FindNewPort(previousPorts, currentPorts);
-                previousPorts = currentPorts;
-
-                if (arduinoPort != null && VerifyArduino(arduinoPort))
-                {
-                    ArduinoHelper.IsConnected = true;
-                    break;
-                }
-
-                arduinoPort = null;
-                Thread.Sleep(100);
-            }
-
-            Console.WriteLine("Arduino connected on port " + arduinoPort);
-            _serialPort = new SerialPort(arduinoPort, 9600)
-            {
-                DtrEnable = true,
-                RtsEnable = true
-            };
-
-            try
-            {
-                _serialPort.Open();
-                _serialPort.DataReceived += SerialDataReceived; // Listen for incoming data
-                Console.WriteLine("Serial Port Opened.");
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine("Error Opening Serial Port: " + e.Message);
-            }
-        }
-
-        private void SerialDataReceived(object sender, SerialDataReceivedEventArgs e)
-        {
-            try
-            {
-                if (_serialPort != null && _serialPort.IsOpen)
-                {
-                    string response = _serialPort.ReadLine().Trim();
-                    SerialLogs.Enqueue(response); // Store message in log
-
-                    Console.WriteLine("Received from Arduino: " + response);
-                    _arduinoHub.Clients.All.SendAsync("ReceiveSerialLog", response);
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Error reading from Serial Port: " + ex.Message);
-            }
-        }
-
         [HttpPost]
         public IActionResult VerifyFingerprint()
         {
@@ -377,49 +479,6 @@ namespace AttendanceSystem.Controllers
             {
                 return Json(new { success = false, message = "Error: " + ex.Message });
             }
-        }
-
-        static string FindNewPort(string[] oldPorts, string[] newPorts)
-        {
-            foreach (string port in newPorts)
-            {
-                if (Array.IndexOf(oldPorts, port) == -1)
-                {
-                    return port;
-                }
-            }
-            return null;
-        }
-
-        static bool VerifyArduino(string port)
-        {
-            try
-            {
-                using (SerialPort arduino = new SerialPort(port, 9600))
-                {
-                    arduino.Open();
-                    Thread.Sleep(3000); // Allow Arduino to reset
-
-                    for (int i = 0; i < 10; i++) // Try reading multiple lines
-                    {
-                        if (arduino.BytesToRead > 0)
-                        {
-                            string data = arduino.ReadLine().Trim();
-                            if (data.Contains("ArduinoFingerPrintSensorReady"))
-                            {
-                                Console.WriteLine("Arduino detected: " + data);
-                                return true;
-                            }
-                        }
-                        Thread.Sleep(100); // Wait a bit before trying again
-                    }
-                }
-            }
-            catch (Exception)
-            {
-                // Ignore errors and retry
-            }
-            return false;
         }
 
         [HttpGet]

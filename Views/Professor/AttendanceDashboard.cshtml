@@ -79,8 +79,64 @@
 
         <button type="submit" class="btn btn-success">Export to Excel</button>
     </form>
+
 }
 else
 {
     <p>No attendance records found for the selected filters.</p>
 }
+
+<!-- Session Control Buttons -->
+<div>
+    <form asp-action="StartSession" method="post" style="display: inline;">
+        <input type="hidden" name="subjectId" value="@ViewBag.SubjectId" />
+        <button type="submit" id="startSessionBtn" class="btn btn-success">Start Session</button>
+    </form>
+
+    <form asp-action="EndSession" method="post" style="display: inline;">
+        <input type="hidden" name="subjectId" value="@ViewBag.SubjectId" />
+        <button type="submit" id="endSessionBtn" class="btn btn-danger">End Session</button>
+    </form>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/microsoft-signalr/signalr.min.js"></script>
+    <script>
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/arduinoHub")
+            .build();
+
+            document.getElementById("startSessionBtn").addEventListener("click",function(){
+                fetch("/Professor/StartSession",{method:"Post"})
+                .then(Response => response.json())
+                .then(data => {
+                    if(!data.success){
+                        alert("Error" + data.message);
+                    }
+                })
+                .catch(err => console.error("Error sending verify command:",err));
+            });
+            document.getElementById("endSessionBtn").addEventListener("click",function(){
+                fetch("/Professor/EndSession",{method:"Post"})
+                .then(Response => response.json())
+                .then(data => {
+                    if(!data.success){
+                        alert("Error" + data.message);
+                    }
+                })
+                .catch(err => console.error("Error sending verify command:",err));
+            });
+        // Handle session started event
+        connection.on("SessionStarted", (subjectId) => {
+            alert(`Session started for Subject ID: ${subjectId}`);
+        });
+
+        // Handle session ended event
+        connection.on("SessionEnded", (subjectId) => {
+            alert(`Session ended for Subject ID: ${subjectId}`);
+        });
+
+        connection.start().catch(err => console.error(err.toString()));
+    </script>
+}
+
