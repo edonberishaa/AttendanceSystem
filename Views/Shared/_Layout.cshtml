@@ -10,6 +10,25 @@
     <link rel="stylesheet" href="~/AttendanceSystem.styles.css" asp-append-version="true" />
     <link rel="icon" type="image/png" href="~/favicon.png" />
     <script src="https://kit.fontawesome.com/fc770c52cb.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
+    <script>
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/serialHub")
+            .build();
+
+        connection.start().then(() => {
+            console.log("✅ SignalR connected (from _Layout)");
+        }).catch(err => console.error("❌ SignalR error:", err));
+
+        connection.on("ReceiveSerialLog", function (message) {
+            console.log("🔌 Serial from Arduino:", message);
+
+            // Dispatch event so any page-specific script can respond
+            const event = new CustomEvent("ArduinoMessage", { detail: message });
+            window.dispatchEvent(event);
+        });
+    </script>
+
 </head>
 <body>
     <div class="navigation">

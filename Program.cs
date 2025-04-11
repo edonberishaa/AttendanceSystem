@@ -38,8 +38,8 @@ builder.Services.ConfigureApplicationCookie(options =>
 
 // Add services to the container
 builder.Services.AddControllersWithViews();
-builder.Services.AddSignalR(); // Add SignalR
-//builder.Services.AddSingleton<SerialService>(); // Singleton ensures the service is always running
+builder.Services.AddSignalR();
+builder.Services.AddSingleton<ArduinoService>();
 
 var app = builder.Build();
 
@@ -58,7 +58,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapStaticAssets();
-app.MapHub<SerialHub>("/serialHub"); // ? Map SerialHub
+app.MapHub<SerialHub>("/arduinoHub"); // ? Map SerialHub
 
 // Default Route
 app.MapControllerRoute(
