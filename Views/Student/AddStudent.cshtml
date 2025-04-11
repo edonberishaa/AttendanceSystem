@@ -1,18 +1,96 @@
-﻿@model Student
+﻿@model AttendanceSystem.Models.Student
 
-<h2>Add New Student</h2>
-<form asp-action="AddStudent" method="post">
-    <div>
-        <label>Name:</label>
-        <input type="text" name="name" required />
-    </div>
-    <div>
-        <label>Fingerprint ID:</label>
-        <input type="number" name="fingerprintId" />
-    </div>
-    <button type="submit">Add Student</button>
-    @if(TempData["Message"] != null)
-    {
-        <div class="alert alert-success">@TempData["Message"]</div>
-    }
-</form>
+@{
+    ViewData["Title"] = "Add Student";
+}
+<h2 style="color: white;">Add Student</h2>
+
+<div id="statusMessage" style="color:white;">🔌 Waiting for Arduino connection...</div>
+
+<div id="studentForm" style="display: none; color: white;">
+    <form method="post" action="@Url.Action("AddStudent", "Student")">
+        <div>
+            <label for="name">Student Name:</label>
+            <input type="text" id="name" name="name" required />
+        </div>
+        <div>
+            <label for="fingerprintId">Fingerprint ID:</label>
+            <input type="text" id="fingerprintId" name="fingerprintId" readonly />
+            <button type="button" id="enrollButton">Enroll</button>
+        </div>
+        <button type="submit">Add Student</button>
+    </form>
+</div>
+
+<div id="serialConsole" style="background: black; color: lime; padding: 10px; margin-top: 20px; height: 200px; overflow-y: auto;">
+    <h3>Serial Console</h3>
+</div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
+    <script>
+        const studentForm = document.getElementById("studentForm");
+        const statusMessage = document.getElementById("statusMessage");
+        const fingerprintInput = document.getElementById("fingerprintId");
+
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/arduinoHub")
+            .build();
+
+        // Initial check to see if Arduino is already connected
+        fetch("/Student/IsArduinoConnected")
+            .then(res => res.json())
+            .then(data => {
+                if (data.connected) {
+                    studentForm.style.display = "block";
+                    statusMessage.textContent = "✅ Fingerprint Sensor Connected!";
+                } else {
+                    studentForm.style.display = "none";
+                    statusMessage.textContent = "🔌 Waiting for Arduino connection...";
+                }
+            })
+            .catch(err => console.error("❌ Error checking Arduino status:", err));
+
+        // Enroll trigger
+        document.getElementById("enrollButton").addEventListener("click", function () {
+            fetch("/Student/EnrollFingerprint", { method: "POST" })
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.success) {
+                        alert("❌ Error: " + data.message);
+                    }
+                })
+                .catch(err => console.error("❌ Error sending enroll command:", err));
+        });
+
+        // SignalR Events
+        connection.on("ReceiveSerialLog", function (message) {
+            console.log("📥 Serial Message:", message);
+
+            if (message.includes("ArduinoFingerPrintSensorReady")) {
+                studentForm.style.display = "block";
+                statusMessage.textContent = "✅ Fingerprint Sensor Connected!";
+            }
+
+            if (message.startsWith("ID ") && /^\d+$/.test(message.substring(3))) {
+                const fingerprintId = message.substring(3);
+                fingerprintInput.value = fingerprintId;
+                alert("✅ Fingerprint Enrolled! ID: " + fingerprintId);
+            }
+
+            const logDiv = document.getElementById("serialConsole");
+            const logEntry = document.createElement("div");
+            logEntry.textContent = message;
+            logDiv.appendChild(logEntry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        });
+
+        connection.start().catch(err => console.error("❌ SignalR Error:", err));
+
+        connection.onclose(error => {
+            console.error("🔌 SignalR connection closed:", error);
+            statusMessage.textContent = "❌ Lost connection to Arduino.";
+            studentForm.style.display = "none";
+        });
+    </script>
+}
