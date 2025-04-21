@@ -12,7 +12,7 @@
 
     <div>
         <label>Filter by Date:</label>
-        <input type="date" name="date"/>
+        <input type="date" name="date" />
     </div>
 
     <div>
@@ -99,6 +99,10 @@ else
     </form>
 </div>
 
+<div id="serialConsole" style="background: black; color: lime; padding: 10px; margin-top: 20px; height: 200px; overflow-y: auto;">
+    <h3>Serial Console</h3>
+</div>
+
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/microsoft-signalr/signalr.min.js"></script>
     <script>
@@ -106,37 +110,78 @@ else
             .withUrl("/arduinoHub")
             .build();
 
-            document.getElementById("startSessionBtn").addEventListener("click",function(){
-                fetch("/Professor/StartSession",{method:"Post"})
-                .then(Response => response.json())
+        // Start session button listener
+        document.getElementById("startSessionBtn").addEventListener("click", function() {
+            fetch("/Professor/StartSession", { method: "POST" })
+                .then(response => response.json())
                 .then(data => {
-                    if(!data.success){
-                        alert("Error" + data.message);
+                    if (!data.success) {
+                        alert("Error: " + data.message);
                     }
                 })
-                .catch(err => console.error("Error sending verify command:",err));
-            });
-            document.getElementById("endSessionBtn").addEventListener("click",function(){
-                fetch("/Professor/EndSession",{method:"Post"})
-                .then(Response => response.json())
+                .catch(err => console.error("Error starting session:", err));
+        });
+
+        // End session button listener
+        document.getElementById("endSessionBtn").addEventListener("click", function() {
+            fetch("/Professor/EndSession", { method: "POST" })
+                .then(response => response.json())
                 .then(data => {
-                    if(!data.success){
-                        alert("Error" + data.message);
+                    if (!data.success) {
+                        alert("Error: " + data.message);
                     }
                 })
-                .catch(err => console.error("Error sending verify command:",err));
-            });
-        // Handle session started event
-        connection.on("SessionStarted", (subjectId) => {
-            alert(`Session started for Subject ID: ${subjectId}`);
+                .catch(err => console.error("Error ending session:", err));
         });
 
-        // Handle session ended event
-        connection.on("SessionEnded", (subjectId) => {
-            alert(`Session ended for Subject ID: ${subjectId}`);
+        // SignalR connection for fingerprint sensor communication
+        connection.on("ReceiveSerialLog", async function(message) {
+            console.log("📥 Serial Message:", message);
+
+            // Log the message in the serial console
+            const logDiv = document.getElementById("serialConsole");
+            const logEntry = document.createElement("div");
+            logEntry.textContent = message;
+            logDiv.appendChild(logEntry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+
+            // Check if the Arduino fingerprint sensor is ready
+            if (message.includes("ArduinoFingerPrintSensorReady")) {
+                studentForm.style.display = "block";
+                statusMessage.textContent = "✅ Fingerprint Sensor Connected!";
+            }
+
+            // Check if the message contains a fingerprint ID (e.g., "ID 1")
+            const match = message.match(/Found ID #(\d+)/);
+            if (match) {
+                const fingerprintId = parseInt(match[1]); // Extract the fingerprint ID
+                console.log("Detected Fingerprint ID:", fingerprintId);
+                    const subjectId = @ViewBag.SubjectId; // Get the current subject ID from ViewBag
+                    console.log("Subject Id: ",subjectId);
+
+
+                try {
+                    const subjectId = @ViewBag.SubjectId; // Get the current subject ID from ViewBag
+                    const response = await fetch(`/Professor/VerifyFingerprint?fingerprintId=${fingerprintId}&subjectId=${subjectId}`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ fingerprintId, subjectId })
+                    });
+
+                    const result = await response.json();
+                    if (result.success) {
+                        alert("✅ Attendance marked successfully!");
+                    } else {
+                        alert("❌ Error: " + result.message);
+                    }
+                } catch (error) {
+                    console.error("Error verifying fingerprint:", error);
+                    alert("❌ Failed to verify fingerprint. Please try again.");
+                }
+            }
         });
 
+        // Start SignalR connection
         connection.start().catch(err => console.error(err.toString()));
     </script>
 }
-

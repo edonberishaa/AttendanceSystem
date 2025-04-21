@@ -25,11 +25,11 @@ namespace AttendanceSystem.Controllers
         {
             public static bool IsConnected = false;
         }
-        public ProfessorController(AppDbContext context, IHubContext<ArduinoHub> arduinoHub,ArduinoService arduino)
+        public ProfessorController(AppDbContext context, IHubContext<ArduinoHub> arduinoHub, ArduinoService arduino)
         {
             _context = context;
             _arduinoHub = arduinoHub;
-            _arduino  =arduino;
+            _arduino = arduino;
         }
         [HttpPost]
         public async Task<IActionResult> StartSession(int subjectId)
@@ -48,7 +48,7 @@ namespace AttendanceSystem.Controllers
                 return NotFound("Subject not found or not assigned to you.");
             }
             var session = _context.SessionStates.FirstOrDefault(s => s.SubjectID == subjectId);
-            if(session == null)
+            if (session == null)
             {
                 session = new SessionState
                 {
@@ -66,7 +66,7 @@ namespace AttendanceSystem.Controllers
             }
             await _context.SaveChangesAsync();
             await _arduinoHub.Clients.All.SendAsync("SessionStarted", subjectId);
-            bool success = _arduino.SendCommand("Verify");
+            bool success = _arduino.SendCommand("VERIFY");
             return RedirectToAction("AttendanceDashboard", new { subjectId });
         }
 
@@ -87,8 +87,8 @@ namespace AttendanceSystem.Controllers
                 return NotFound("Subject not found or not assigned to you.");
             }
             var session = _context.SessionStates.FirstOrDefault(s => s.SubjectID == subjectId);
-            
-            if(session !=null && session.IsActive)
+
+            if (session != null && session.IsActive)
             {
                 session.IsActive = false;
                 session.EndDate = DateTime.Now;
@@ -100,7 +100,7 @@ namespace AttendanceSystem.Controllers
                     .ToList();
                 var lessonDate = DateTime.Today;
 
-                foreach(var studentId in enrolledStudents)
+                foreach (var studentId in enrolledStudents)
                 {
                     var attendaceRecord = _context.Attendances
                         .FirstOrDefault(a =>
@@ -108,7 +108,7 @@ namespace AttendanceSystem.Controllers
                         a.SubjectID == subjectId &&
                         a.LessonDate == lessonDate);
 
-                    if(attendaceRecord == null)
+                    if (attendaceRecord == null)
                     {
                         _context.Attendances.Add(new Attendance
                         {
@@ -118,14 +118,14 @@ namespace AttendanceSystem.Controllers
                             Present = false
                         });
                     }
-                    else if(!attendaceRecord.Present)
+                    else if (!attendaceRecord.Present)
                     {
                         attendaceRecord.Present = false;
                     }
                 }
                 await _context.SaveChangesAsync();
                 await _arduinoHub.Clients.All.SendAsync("SessionEnded", subjectId);
-                bool success = _arduino.SendCommand("endsession");
+                bool success = _arduino.SendCommand("EndSession");
             }
             return RedirectToAction("AttendanceDashboard", new { subjectId });
         }
@@ -191,36 +191,36 @@ namespace AttendanceSystem.Controllers
             await _context.SaveChangesAsync();
             return Json(new { success = true, message = "Attendace marked successfully" });
         }
-                public IActionResult RegisterStudent(int subjectId)
-                {
-                    var professorEmail = User.Identity.Name;
+        public IActionResult RegisterStudent(int subjectId)
+        {
+            var professorEmail = User.Identity.Name;
 
-                    var professor = _context.Users.FirstOrDefault(u => u.Email == professorEmail);
-                    if (professor == null)
-                    {
-                        return NotFound("Professor not found.");
-                    }
+            var professor = _context.Users.FirstOrDefault(u => u.Email == professorEmail);
+            if (professor == null)
+            {
+                return NotFound("Professor not found.");
+            }
 
-                    var subject = _context.Subjects.FirstOrDefault(s => s.SubjectID == subjectId && s.ProfessorID == professor.Id);
-                    if (subject == null)
-                    {
-                        return NotFound("Subject not found or not assigned to you.");
-                    }
+            var subject = _context.Subjects.FirstOrDefault(s => s.SubjectID == subjectId && s.ProfessorID == professor.Id);
+            if (subject == null)
+            {
+                return NotFound("Subject not found or not assigned to you.");
+            }
 
-                    ViewBag.SubjectID = subjectId;
-                    ViewBag.SubjectName = subject.SubjectName;
+            ViewBag.SubjectID = subjectId;
+            ViewBag.SubjectName = subject.SubjectName;
 
-                    var registeredStudentIds = _context.Attendances
-                        .Where(a => a.SubjectID == subjectId)
-                        .Select(a => a.StudentID)
-                        .ToList();
+            var registeredStudentIds = _context.Attendances
+                .Where(a => a.SubjectID == subjectId)
+                .Select(a => a.StudentID)
+                .ToList();
 
-                    var unregisteredStudents = _context.Students
-                        .Where(s => !registeredStudentIds.Contains(s.StudentID))
-                        .ToList();
+            var unregisteredStudents = _context.Students
+                .Where(s => !registeredStudentIds.Contains(s.StudentID))
+                .ToList();
 
-                    return View(unregisteredStudents);
-                }
+            return View(unregisteredStudents);
+        }
         [HttpPost]
         public IActionResult RegisterStudent(int subjectId, int studentId)
         {
@@ -265,7 +265,7 @@ namespace AttendanceSystem.Controllers
             return RedirectToAction("ViewStudents", new { subjectId });
         }
 
-        public IActionResult RemoveStudent(int subjectId,int studentId)
+        public IActionResult RemoveStudent(int subjectId, int studentId)
         {
             var professorEmail = User.Identity.Name;
             var professor = _context.Users.FirstOrDefault(u => u.Email == professorEmail);
@@ -281,14 +281,14 @@ namespace AttendanceSystem.Controllers
                 return NotFound("Subject not found or not assigned to you.");
             }
             var attendanceRecord = _context.Attendances.FirstOrDefault(a => a.StudentID == studentId && a.SubjectID == subjectId);
-            if(attendanceRecord == null)
+            if (attendanceRecord == null)
             {
                 return NotFound("Student is not registered in this subject.");
             }
             _context.Attendances.Remove(attendanceRecord);
             _context.SaveChanges();
 
-            return RedirectToAction("ViewStudents",new {subjectId});
+            return RedirectToAction("ViewStudents", new { subjectId });
         }
 
         public IActionResult Dashboard()
@@ -317,7 +317,7 @@ namespace AttendanceSystem.Controllers
             }
             var subject = _context.Subjects
                 .FirstOrDefault(s => s.SubjectID == subjectId && s.ProfessorID == professor.Id);
-             if (subject == null)
+            if (subject == null)
             {
                 return NotFound("Subject not found or not assigned to you!");
             }
@@ -368,7 +368,7 @@ namespace AttendanceSystem.Controllers
                 attendanceQuery = attendanceQuery.Where(a => a.LessonDate >= startDate && a.LessonDate <= endDate);
             }
             var attendanceRecords = attendanceQuery.ToList();
-            
+
             return View(attendanceRecords);
         }
 
@@ -384,7 +384,7 @@ namespace AttendanceSystem.Controllers
             return View(subjects);
         }
 
-        public IActionResult ExportAttendanceToExcel(int subjectId,int? week,DateTime? date = null)
+        public IActionResult ExportAttendanceToExcel(int subjectId, int? week, DateTime? date = null)
         {
             var professorEmail = User.Identity.Name;
 
@@ -424,7 +424,7 @@ namespace AttendanceSystem.Controllers
                 return NotFound("NO attendance records found for the selected week");
             }
 
-            using(var workbook = new XLWorkbook())
+            using (var workbook = new XLWorkbook())
             {
                 var worksheet = workbook.Worksheets.Add("Attendance");
 
@@ -433,7 +433,7 @@ namespace AttendanceSystem.Controllers
                 worksheet.Cell(1, 3).Value = "Attendance Status";
 
                 int row = 2;
-                foreach(var record in records)
+                foreach (var record in records)
                 {
                     worksheet.Cell(row, 1).Value = record.Student.Name;
                     worksheet.Cell(row, 2).Value = record.LessonDate.ToString("dd/MM/yyyy");
@@ -442,7 +442,7 @@ namespace AttendanceSystem.Controllers
                 }
                 worksheet.Columns().AdjustToContents();
 
-                using(var stream = new MemoryStream())
+                using (var stream = new MemoryStream())
                 {
                     workbook.SaveAs(stream);
                     var content = stream.ToArray();
@@ -462,24 +462,24 @@ namespace AttendanceSystem.Controllers
             return Json(new { status = isConnected ? "connected" : "waiting" });
         }
 
-        [HttpPost]
-        public IActionResult VerifyFingerprint()
-        {
-            try
-            {
-                if (_serialPort != null && _serialPort.IsOpen)
-                {
-                    _serialPort.WriteLine("verify"); // Send command
-                    Console.WriteLine("Sent 'verify' command to Arduino.");
-                    return Json(new { success = true, message = "Verifying started. Waiting for fingerprint..." });
-                }
-                return Json(new { success = false, message = "Serial port is not open." });
-            }
-            catch (Exception ex)
-            {
-                return Json(new { success = false, message = "Error: " + ex.Message });
-            }
-        }
+        //[HttpPost]
+        //public IActionResult VerifyFingerprint()
+        //{
+        //    try
+        //    {
+        //        if (_serialPort != null && _serialPort.IsOpen)
+        //        {
+        //            _serialPort.WriteLine("verify"); // Send command
+        //            Console.WriteLine("Sent 'verify' command to Arduino.");
+        //            return Json(new { success = true, message = "Verifying started. Waiting for fingerprint..." });
+        //        }
+        //        return Json(new { success = false, message = "Serial port is not open." });
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return Json(new { success = false, message = "Error: " + ex.Message });
+        //    }
+        //}
 
         [HttpGet]
         public IActionResult GetSerialLog()
