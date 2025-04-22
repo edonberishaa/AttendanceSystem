@@ -1,66 +1,149 @@
-﻿using System.IO.Ports;
+﻿using System;
+using System.IO.Ports;
+using System.Linq;
 using System.Collections.Concurrent;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Logging;
 using AttendanceSystem.Hubs;
 
 namespace AttendanceSystem.Services
 {
-    public class ArduinoService
+    public class ArduinoService : IDisposable
     {
-        private SerialPort _serialPort;
-        private readonly ConcurrentQueue<string> _serialLogs = new();
+        private readonly ILogger<ArduinoService> _logger;
         private readonly IHubContext<ArduinoHub> _hubContext;
+        private readonly ConcurrentQueue<string> _serialLogs = new();
         private readonly object _lock = new();
+        private SerialPort _serialPort;
+        private string _lastKnownPort;
+        private string[] _previousPorts;
+        private CancellationTokenSource _cts;
 
-        public bool IsConnected { get; private set; } = false;
+        public bool IsConnected => IsArduinoConnected();
 
-        public ArduinoService(IHubContext<ArduinoHub> hubContext)
+        public ArduinoService(IHubContext<ArduinoHub> hubContext, ILogger<ArduinoService> logger)
         {
             _hubContext = hubContext;
-            Task.Run(() => InitializeSerialPort());
+            _logger = logger;
+            _previousPorts = SerialPort.GetPortNames();
+            _cts = new CancellationTokenSource();
+
+            _logger.LogInformation("Arduino service initialized");
+            Task.Run(() => MonitorConnection(_cts.Token));
         }
 
-        public bool IsArduinoConnected() => _serialPort != null && _serialPort.IsOpen;
+        public bool IsArduinoConnected()
+        {
+            lock (_lock)
+            {
+                return _serialPort?.IsOpen == true;
+            }
+        }
 
         public string[] GetSerialLogs() => _serialLogs.ToArray();
 
-        private async Task InitializeSerialPort()
+        private async Task MonitorConnection(CancellationToken ct)
         {
-            string arduinoPort = null;
-            string[] previousPorts = SerialPort.GetPortNames();
-
-            while (arduinoPort == null)
-            {
-                string[] currentPorts = SerialPort.GetPortNames();
-                arduinoPort = FindNewPort(previousPorts, currentPorts);
-                previousPorts = currentPorts;
-
-                if (arduinoPort != null && VerifyArduino(arduinoPort))
-                {
-                    IsConnected = true;
-                    break;
-                }
-
-                arduinoPort = null;
-                Thread.Sleep(200);
-            }
-
-            _serialPort = new SerialPort(arduinoPort, 9600)
-            {
-                DtrEnable = true,
-                RtsEnable = true
-            };
-            Console.WriteLine("Arduino connected on port: " + arduinoPort);
-
             try
             {
-                _serialPort.Open();
-                Console.WriteLine("Serial Port Opened!!!");
-                _serialPort.DataReceived += SerialDataReceived;
+                while (!ct.IsCancellationRequested)
+                {
+                    if (!IsArduinoConnected())
+                    {
+                        _logger.LogWarning("Arduino disconnected. Attempting to reconnect...");
+                        await InitializeSerialPort(ct);
+                    }
+                    await Task.Delay(1000, ct);
+                }
             }
-            catch (Exception e)
+            catch (TaskCanceledException)
             {
-                Console.WriteLine("Error opening serial port: " + e.Message);
+                _logger.LogInformation("Connection monitoring canceled");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Connection monitoring error");
+            }
+        }
+
+        private async Task InitializeSerialPort(CancellationToken ct)
+        {
+            try
+            {
+                if (!string.IsNullOrEmpty(_lastKnownPort))
+                {
+                    _logger.LogInformation("Attempting last known port: {Port}", _lastKnownPort);
+                    if (VerifyArduino(_lastKnownPort))
+                    {
+                        ConnectToPort(_lastKnownPort);
+                        return;
+                    }
+                    _lastKnownPort = null;
+                }
+
+                string arduinoPort = null;
+                while (arduinoPort == null && !ct.IsCancellationRequested)
+                {
+                    var currentPorts = SerialPort.GetPortNames();
+                    arduinoPort = FindNewPort(_previousPorts, currentPorts);
+
+                    if (arduinoPort != null)
+                    {
+                        if (!currentPorts.Contains(arduinoPort)) continue;
+
+                        await Task.Delay(500, ct);
+
+                        if (VerifyArduino(arduinoPort))
+                        {
+                            _lastKnownPort = arduinoPort;
+                            ConnectToPort(arduinoPort);
+                            return;
+                        }
+                        arduinoPort = null;
+                    }
+
+                    await Task.Delay(1000, ct);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Port initialization failed");
+            }
+        }
+
+        private void ConnectToPort(string port)
+        {
+            lock (_lock)
+            {
+                try
+                {
+                    if (_serialPort != null)
+                    {
+                        _serialPort.DataReceived -= SerialDataReceived;
+                        _serialPort.Dispose();
+                    }
+
+                    _serialPort = new SerialPort(port, 9600)
+                    {
+                        DtrEnable = true,
+                        RtsEnable = true,
+                        Handshake = Handshake.RequestToSend,
+                        ReadTimeout = 2000,
+                        WriteTimeout = 2000
+                    };
+
+                    _serialPort.Open();
+                    _serialPort.DataReceived += SerialDataReceived;
+                    _logger.LogInformation("Connected to {Port}", port);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to connect to {Port}", port);
+                    _serialPort?.Dispose();
+                    _serialPort = null;
+                }
             }
         }
 
@@ -70,67 +153,106 @@ namespace AttendanceSystem.Services
             {
                 try
                 {
-                    string response = _serialPort.ReadLine().Trim();
+                    var response = _serialPort.ReadLine().Trim();
                     _serialLogs.Enqueue(response);
                     _hubContext.Clients.All.SendAsync("ReceiveSerialLog", response);
-                    Console.WriteLine(response);
+                    _logger.LogDebug("Received: {Response}", response);
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine("Serial Read Error: " + ex.Message);
+                    _logger.LogError(ex, "Data receive error");
+                    _serialPort?.Dispose();
+                    _serialPort = null;
                 }
             }
         }
 
-        private static string FindNewPort(string[] oldPorts, string[] newPorts) {
-            return newPorts.Except(oldPorts).FirstOrDefault();
-        }
-
-        private static bool VerifyArduino(string port)
+        private bool VerifyArduino(string port)
         {
-            try
+            const int maxRetries = 3;
+            for (var retry = 0; retry < maxRetries; retry++)
             {
-                using (SerialPort testPort = new SerialPort(port, 9600))
+                try
                 {
-                    testPort.Open();
-                    Thread.Sleep(3000);
+                    if (!SerialPort.GetPortNames().Contains(port))
+                    {
+                        _logger.LogWarning("Port {Port} unavailable (attempt {Attempt})", port, retry + 1);
+                        continue;
+                    }
 
-                    for (int i = 0; i < 10; i++)
+                    using var testPort = new SerialPort(port, 9600);
+                    testPort.Open();
+
+                    var timeout = DateTime.UtcNow.AddSeconds(5);
+                    while (DateTime.UtcNow < timeout)
                     {
                         if (testPort.BytesToRead > 0)
                         {
-                            string data = testPort.ReadLine().Trim();
+                            var data = testPort.ReadLine().Trim();
                             if (data.Contains("ArduinoFingerPrintSensorReady"))
                             {
-                                Console.WriteLine("Arduino is Ready!!!");
+                                _logger.LogInformation("Arduino verified");
                                 return true;
                             }
                         }
-                        Thread.Sleep(100);
+                        Thread.Sleep(200);
                     }
                 }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Verification attempt {Attempt} failed", retry + 1);
+                }
+                finally
+                {
+                    Thread.Sleep(1000);
+                }
             }
-            catch (Exception) { }
             return false;
         }
 
         public bool SendCommand(string command)
         {
-            try
+            lock (_lock)
             {
-                if (IsArduinoConnected())
+                try
                 {
+                    if (!IsArduinoConnected()) return false;
+
                     _serialPort.WriteLine(command);
-                    Console.WriteLine($"Sent '{command}' command to Arduino.");
+                    _logger.LogInformation("Sent command: {Command}", command);
                     return true;
                 }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Command send failed");
+                    _serialPort?.Dispose();
+                    _serialPort = null;
+                    return false;
+                }
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Failed to send command: " + ex.Message);
-            }
-            return false;
         }
 
+        private static string FindNewPort(string[] oldPorts, string[] newPorts)
+        {
+            return newPorts.Except(oldPorts).FirstOrDefault();
+        }
+
+        public void Dispose()
+        {
+            _cts?.Cancel();
+            _cts?.Dispose();
+
+            lock (_lock)
+            {
+                if (_serialPort == null) return;
+
+                _serialPort.DataReceived -= SerialDataReceived;
+                _serialPort.Close();
+                _serialPort.Dispose();
+                _serialPort = null;
+            }
+            _logger.LogInformation("Arduino service disposed");
+            GC.SuppressFinalize(this);
+        }
     }
 }

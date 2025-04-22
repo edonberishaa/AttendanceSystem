@@ -68,6 +68,11 @@
     </div>
     <div class="content">
         <div class="account">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <div id="statusDot" style="width: 10px; height: 10px; border-radius: 50%; background-color: gray;"></div>
+                <span id="statusText" style="color: white; font-size: 0.9em;">Checking...</span>
+            </div>
+
             @if (User.Identity.IsAuthenticated)
             {
                 <a href="#" class="dropdown-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -100,6 +105,35 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script>
+        function checkArduinoStatus() {
+            fetch("/Arduino/IsConnected")
+                .then(res => res.json())
+                .then(data => {
+                    const dot = document.getElementById("statusDot");
+                    const text = document.getElementById("statusText");
+                    if (data.connected) {
+                        dot.style.backgroundColor = "lime";
+                        text.textContent = "Connected";
+                    } else {
+                        dot.style.backgroundColor = "red";
+                        text.textContent = "Disconnected";
+                    }
+                })
+                .catch(() => {
+                    // Handle errors or failed fetch (maybe disconnected)
+                    const dot = document.getElementById("statusDot");
+                    const text = document.getElementById("statusText");
+                    dot.style.backgroundColor = "red";
+                    text.textContent = "Disconnected";
+                });
+        }
+
+        // Initial check + interval
+        checkArduinoStatus();
+        setInterval(checkArduinoStatus, 5000); // every 5 seconds
+    </script>
+
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
