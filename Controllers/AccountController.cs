@@ -15,11 +15,14 @@ namespace AttendanceSystem.Controllers
             _userManager = userManager;
             _signInManager = signInManager;
         }
+
+        [Authorize(Roles ="Admin")]
         [HttpGet]
         public IActionResult Register()
         {
             return View();
         }
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<IActionResult> Register(RegisterVM registerVM)
         {
@@ -28,7 +31,6 @@ namespace AttendanceSystem.Controllers
 
             if (result.Succeeded)
             {
-                await _signInManager.SignInAsync(user,isPersistent: false);
                 return RedirectToAction("Index","Home");
             }
             foreach(var error in result.Errors)

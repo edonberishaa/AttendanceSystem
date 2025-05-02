@@ -17,7 +17,7 @@ namespace AttendanceSystem.Controllers
             _context = context;
             _logger = logger;
         }
-
+        [HttpGet]
         public IActionResult Index()
         {
             var students = _context.Students.Count();

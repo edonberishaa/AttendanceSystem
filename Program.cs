@@ -39,10 +39,39 @@ builder.Services.ConfigureApplicationCookie(options =>
 
 // Add services to the container
 builder.Services.AddControllersWithViews();
+
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+    {
+        Title = "Attendance System API",
+        Version = "v1",
+        Description = "An API for managing attendance sessions, professors, students, and Arduino integration. ",
+        Contact = new Microsoft.OpenApi.Models.OpenApiContact
+        {
+            Name = "Edon Berisha",
+            Email = "edon.berisha@umib.net",
+            Url = new Uri("https://edonnberisha.netlify.app/")
+        }
+    });
+});
+
 builder.Services.AddSignalR();
 builder.Services.AddSingleton<ArduinoService>();
 
 var app = builder.Build();
+app.UseSwagger();
+app.UseSwaggerUI(options =>
+{
+    options.SwaggerEndpoint("/swagger/v1/swagger.json", "Attendance System API v1");
+    options.RoutePrefix = "swagger";
+});
+
+using(var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    await RoleInitializer.InitializeAsync(services);
+}
 
 // Configure the HTTP request pipeline
 if (!app.Environment.IsDevelopment())

@@ -22,6 +22,7 @@ namespace AttendanceSystem.Controllers
         }
 
         // GET: Subjects
+        [HttpGet]
         public async Task<IActionResult> Index()
         {
             var appDbContext = _context.Subjects.Include(s => s.Professor);
@@ -29,6 +30,7 @@ namespace AttendanceSystem.Controllers
         }
 
         // GET: Subjects/Details/5
+        [HttpGet("{id}")]
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -48,6 +50,7 @@ namespace AttendanceSystem.Controllers
         }
 
         // GET: Subjects/Create
+        [HttpGet]
         public IActionResult Create()
         {
             ViewData["ProfessorID"] = new SelectList(_context.Users, "Id", "Email");
@@ -79,6 +82,7 @@ namespace AttendanceSystem.Controllers
         }
 
         // GET: Subjects/Edit/5
+
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)

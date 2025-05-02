@@ -1,0 +1,28 @@
+﻿@model IEnumerable<Microsoft.AspNetCore.Identity.IdentityUser>
+
+<h2>All Professors</h2>
+
+@if (Model.Any())
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Username</th>
+                <th>Email</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var professor in Model)
+            {
+                <tr>
+                    <td>@professor.UserName</td>
+                    <td>@professor.Email</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>No professors found.</p>
+}

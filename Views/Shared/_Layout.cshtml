@@ -31,14 +31,17 @@
                         Dashboard
                     </li>
                 </a>
-                <a asp-controller="Admin" asp-action="AssignSubject" class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Admin" ? "active" : "")">
-                    <li>
-                        <div class="list-logo">
-                            <i class="fa-solid fa-graduation-cap"></i>
-                        </div>
-                        Professors
-                    </li>
-                </a>
+                @if (User.IsInRole("Admin"))
+                {
+                    <a asp-controller="Professor" asp-action="AllProfessors" class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Admin" ? "active" : "")">
+                        <li>
+                            <div class="list-logo">
+                                <i class="fa-solid fa-graduation-cap"></i>
+                            </div>
+                            View Available Professors 
+                        </li>
+                    </a>
+                }
                 <a asp-controller="Student" asp-action="AllStudents" class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Student" ? "active" : "")">
                     <li>
                         <div class="list-logo">
@@ -55,14 +58,17 @@
                         Attendance               
                     </li>
                 </a>
-                <a asp-controller="Subjects" asp-action="Index" class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Subjects" ? "active" : "")">
-                    <li>
-                        <div class="list-logo">
-                            <i class="fa-solid fa-book"></i>
-                        </div>
-                        Subjects              
-                    </li>
-                </a>
+                @if (User.IsInRole("Admin"))
+                {
+                    <a asp-controller="Subjects" asp-action="Index" class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Subjects" ? "active" : "")">
+                        <li>
+                            <div class="list-logo">
+                                <i class="fa-solid fa-book"></i>
+                            </div>
+                            Subjects
+                        </li>
+                    </a>
+                }
             </ul>
         </div>
     </div>
@@ -73,7 +79,13 @@
                 <a href="#" class="dropdown-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                     <div>
                         <h6>@User.Identity.Name</h6>
+                        @if (User.IsInRole("Admin"))
+                        {
                         <p>Admin</p>
+                        }
+                        else{
+                            <p>Professor</p>
+                        }
                     </div>
                     <img src="~/img/user.png" alt="Alternate Text" />
                 </a>
