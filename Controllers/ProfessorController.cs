@@ -4,6 +4,7 @@ using AttendanceSystem.Models;
 using AttendanceSystem.Services;
 using ClosedXML.Excel;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
@@ -20,16 +21,31 @@ namespace AttendanceSystem.Controllers
         private static SerialPort? _serialPort;
         private static ConcurrentQueue<string> SerialLogs = new ConcurrentQueue<string>();
         private readonly IHubContext<ArduinoHub> _arduinoHub;
+        private readonly UserManager<IdentityUser> _userManager;
 
         public static class ArduinoHelper
         {
             public static bool IsConnected = false;
         }
-        public ProfessorController(AppDbContext context, IHubContext<ArduinoHub> arduinoHub, ArduinoService arduino)
+        public ProfessorController(AppDbContext context, IHubContext<ArduinoHub> arduinoHub, ArduinoService arduino, UserManager<IdentityUser> userManager)
         {
             _context = context;
             _arduinoHub = arduinoHub;
             _arduino = arduino;
+            _userManager = userManager;
+        }
+        [Authorize(Roles = "Admin")]
+        [HttpGet]
+        public IActionResult AllProfessors()
+        {
+            var users = (from u in _context.Users
+                         join ur in _context.UserRoles on u.Id equals ur.UserId into userRoles
+                         from ur in userRoles.DefaultIfEmpty() // LEFT JOIN
+                         join r in _context.Roles on ur.RoleId equals r.Id into roles
+                         from r in roles.DefaultIfEmpty() // LEFT JOIN
+                         where r == null || r.NormalizedName != "ADMIN"
+                         select u).Distinct().ToList();
+            return View(users);
         }
         [HttpPost]
         public async Task<IActionResult> StartSession(int subjectId)
@@ -191,6 +207,7 @@ namespace AttendanceSystem.Controllers
             await _context.SaveChangesAsync();
             return Json(new { success = true, message = "Attendace marked successfully" });
         }
+        [HttpGet]
         public IActionResult RegisterStudent(int subjectId)
         {
             var professorEmail = User.Identity.Name;
@@ -265,6 +282,7 @@ namespace AttendanceSystem.Controllers
             return RedirectToAction("ViewStudents", new { subjectId });
         }
 
+        [HttpPost]
         public IActionResult RemoveStudent(int subjectId, int studentId)
         {
             var professorEmail = User.Identity.Name;
@@ -290,7 +308,6 @@ namespace AttendanceSystem.Controllers
 
             return RedirectToAction("ViewStudents", new { subjectId });
         }
-
         public IActionResult Dashboard()
         {
             var professorEmail = User.Identity.Name;
@@ -305,7 +322,6 @@ namespace AttendanceSystem.Controllers
                 .ToList();
             return View(subjects);
         }
-
         public IActionResult ViewStudents(int subjectId)
         {
             var professorEmail = User.Identity.Name;
@@ -461,25 +477,6 @@ namespace AttendanceSystem.Controllers
             bool isConnected = _serialPort != null && _serialPort.IsOpen;
             return Json(new { status = isConnected ? "connected" : "waiting" });
         }
-
-        //[HttpPost]
-        //public IActionResult VerifyFingerprint()
-        //{
-        //    try
-        //    {
-        //        if (_serialPort != null && _serialPort.IsOpen)
-        //        {
-        //            _serialPort.WriteLine("verify"); // Send command
-        //            Console.WriteLine("Sent 'verify' command to Arduino.");
-        //            return Json(new { success = true, message = "Verifying started. Waiting for fingerprint..." });
-        //        }
-        //        return Json(new { success = false, message = "Serial port is not open." });
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return Json(new { success = false, message = "Error: " + ex.Message });
-        //    }
-        //}
 
         [HttpGet]
         public IActionResult GetSerialLog()

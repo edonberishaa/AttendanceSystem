@@ -1,0 +1,21 @@
+name: Basic CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Check files
+      run: |
+        echo "Repository content:"
+        ls -la
+        echo "CI workflow completed successfully!"
+

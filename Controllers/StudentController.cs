@@ -26,12 +26,14 @@ namespace AttendanceSystem.Controllers
             _arduino = arduino;
         }
 
+        [HttpGet]
         public IActionResult AllStudents()
         {
             var students = _context.Students.ToList();
             return View(students);
         }
 
+        [HttpGet]
         public IActionResult AddStudent()
         {
             return View();
@@ -84,6 +86,7 @@ namespace AttendanceSystem.Controllers
             return RedirectToAction("AllStudents");
         }
 
+        [HttpDelete("{id}")]
         public IActionResult DeleteStudent(int id)
         {
             var student = _context.Students.FirstOrDefault(s => s.StudentID == id);
