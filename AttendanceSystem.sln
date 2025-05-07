@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.13.35913.81 d17.13
+VisualStudioVersion = 17.13.35913.81
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AttendanceSystem", "AttendanceSystem.csproj", "{4A92B30D-5D48-4CD3-9CD1-B06045B34FBE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AttendanceSystem.Tests", "..\AttendanceSystem.Tests\AttendanceSystem.Tests.csproj", "{A858CA3F-BF51-4369-8B07-E92B6C1B008A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{4A92B30D-5D48-4CD3-9CD1-B06045B34FBE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4A92B30D-5D48-4CD3-9CD1-B06045B34FBE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4A92B30D-5D48-4CD3-9CD1-B06045B34FBE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A858CA3F-BF51-4369-8B07-E92B6C1B008A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A858CA3F-BF51-4369-8B07-E92B6C1B008A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A858CA3F-BF51-4369-8B07-E92B6C1B008A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A858CA3F-BF51-4369-8B07-E92B6C1B008A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -20,6 +20,11 @@ namespace AttendanceSystem.Services
             Task.Run(() => InitializeSerialPort());
         }
 
+        public ArduinoService()
+        {
+            _hubContext = null; // Mocked in tests
+            _serialPort = null; // Mocked in tests
+        }
         public bool IsArduinoConnected() => _serialPort != null && _serialPort.IsOpen;
 
         public string[] GetSerialLogs() => _serialLogs.ToArray();
