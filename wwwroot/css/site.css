@@ -18,7 +18,7 @@ body {
 }
 
 .navigation {
-    width: 350px;
+    width: 300px;
     height: 100vh;
     background-color: #1e1e1e;
     color: #fff;
@@ -28,7 +28,7 @@ body {
 }
 
 .list {
-    width: 90%;
+    width: 80%;
     margin: 15px auto;
     h6 {
            color: #b0b0b0;
@@ -67,17 +67,6 @@ body {
     }
 }
 
-main {
-    display: flex;
-    flex-direction: column;
-    height: calc(100vh - 80px);
-    justify-content: flex-start;
-}
-
-.serialConsole {
-    justify-self: flex-end;
-}
-
 .navbar-brand {
     margin: 25px 0 35px 0;
 }
@@ -92,12 +81,8 @@ main {
     height: 80px;
     display: flex;
     flex-direction: row;
-    justify-content: space-between;
+    justify-content: flex-end;
     align-items: center;
-    .status-indicator
-    {
-        margin-left: 25px;
-    }
     a
     {
         text-decoration: none;
