@@ -9,23 +9,33 @@ namespace AttendanceSystem.Controllers
     {
         private readonly UserManager<IdentityUser> _userManager;
         private readonly SignInManager<IdentityUser> _signInManager;
+        private readonly RoleManager<IdentityRole> _roleManager;
 
-        public AccountController(UserManager<IdentityUser> userManager,SignInManager<IdentityUser> signInManager)
+        public AccountController(UserManager<IdentityUser> userManager,SignInManager<IdentityUser> signInManager, RoleManager<IdentityRole> roleManager)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _roleManager = roleManager;
         }
 
         [Authorize(Roles ="Admin")]
         [HttpGet]
         public IActionResult Register()
         {
+            var hasUsers = _userManager.Users.Any();
+            if(hasUsers && !User.IsInRole("Admin"))
+            {
+                return Forbid();
+            }
+
             return View();
         }
         [Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<IActionResult> Register(RegisterVM registerVM)
         {
+            var hasUsers = _userManager.Users.Any();
+
             var user = new IdentityUser { UserName = registerVM.Email, Email = registerVM.Email };
             var result = await _userManager.CreateAsync(user, registerVM.Password);
 

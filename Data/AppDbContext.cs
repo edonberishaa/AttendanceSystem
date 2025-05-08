@@ -9,10 +9,13 @@ namespace AttendanceSystem.Data
     {
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
         { }
-        public DbSet<Subject> Subjects { get; set; }
-        public DbSet<Student> Students { get; set; }
-        public DbSet<Attendance> Attendances { get; set; }
-        public DbSet<SessionState> SessionStates { get; set; }
+        public AppDbContext()
+        {
+        }
+        public virtual DbSet<Subject> Subjects { get; set; }
+        public virtual DbSet<Student> Students { get; set; }
+        public virtual DbSet<Attendance> Attendances { get; set; }
+        public  virtual DbSet<SessionState> SessionStates { get; set; }
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);

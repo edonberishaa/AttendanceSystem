@@ -34,6 +34,7 @@ namespace AttendanceSystem.Services
             Task.Run(() => MonitorConnection(_cts.Token));
         }
 
+
         public bool IsArduinoConnected()
         {
             lock (_lock)
@@ -41,6 +42,8 @@ namespace AttendanceSystem.Services
                 return _serialPort?.IsOpen == true;
             }
         }
+
+        public bool IsArduinoConnected() => _serialPort != null && _serialPort.IsOpen;
 
         public string[] GetSerialLogs() => _serialLogs.ToArray();
 
