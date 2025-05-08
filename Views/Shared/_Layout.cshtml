@@ -33,7 +33,7 @@
                 </a>
                 @if (User.IsInRole("Admin"))
                 {
-                    <a asp-controller="Professor" asp-action="AllProfessors" class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Admin" ? "active" : "")">
+                    <a asp-controller="Professor" asp-action="AllProfessors" class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Professor" && ViewContext.RouteData.Values["Action"].ToString() == "AllProfessors" ? "active" : "")">
                         <li>
                             <div class="list-logo">
                                 <i class="fa-solid fa-graduation-cap"></i>
@@ -50,7 +50,7 @@
                         Students                
                     </li>
                 </a>
-                <a asp-controller="Professor" asp-action="Dashboard" class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Professor" ? "active" : "")">
+                <a asp-controller="Professor" asp-action="Dashboard" class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Professor"  && !(ViewContext.RouteData.Values["Action"].ToString() == "AllProfessors") ? "active" : "")">
                     <li>
                         <div class="list-logo">
                             <i class="fa-solid fa-users"></i>
@@ -74,7 +74,7 @@
     </div>
     <div class="content">
         <div class="account">
-            <div style="display: flex; align-items: center; gap: 8px;">
+            <div style="display: flex; align-items: center; gap: 8px;" class="status-indicator">
                 <div id="statusDot" style="width: 10px; height: 10px; border-radius: 50%; background-color: gray;"></div>
                 <span id="statusText" style="color: white; font-size: 0.9em;">Checking...</span>
             </div>
@@ -94,7 +94,7 @@
                     </div>
                     <img src="~/img/user.png" alt="Alternate Text" />
                 </a>
-                <ul class="dropdown-menu">
+                <ul class="dropdown-menu" style="flex-direction: row-reverse">
                     <li class="dropdown-item">
                         <form method="post" asp-controller="Account" asp-action="Logout">
                             <button type="submit" class="btn btn-link nav-link">Log out</button>
@@ -126,10 +126,10 @@
                     const text = document.getElementById("statusText");
                     if (data.connected) {
                         dot.style.backgroundColor = "lime";
-                        text.textContent = "Connected";
+                        text.textContent = "Device is connected and ready.";
                     } else {
                         dot.style.backgroundColor = "red";
-                        text.textContent = "Disconnected";
+                        text.textContent = "No device detected. Please connect a device to continue.";
                     }
                 })
                 .catch(() => {

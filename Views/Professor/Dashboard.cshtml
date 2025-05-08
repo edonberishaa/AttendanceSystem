@@ -1,5 +1,8 @@
 ﻿@model IEnumerable<Subject>
 
+@{
+    ViewData["Title"] = "Dashboard";
+}
 <!DOCTYPE html>
 <html lang="en" data-bs-theme="dark">
 <head>
@@ -14,7 +17,14 @@
     @if (User.Identity.IsAuthenticated)
     {
         <div class="welcome-message">
-            Welcome, Professor <strong>@User.Identity.Name</strong>
+            Welcome, @if (User.IsInRole("Admin"))
+            {
+                <span>Admin</span>
+            }
+            else
+            {
+                <span>Professor</span>
+            } <strong>@User.Identity.Name</strong>
         </div>
     }
 
