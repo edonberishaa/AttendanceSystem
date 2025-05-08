@@ -3,23 +3,23 @@
 @{
     ViewData["Title"] = "Add Student";
 }
-<h2 style="color: white;">Add Student</h2>
-
-<div id="statusMessage" style="color:white;">🔌 Waiting for Arduino connection...</div>
-
-<div id="studentForm" style="display: none; color: white;">
-    <form method="post" action="@Url.Action("AddStudent", "Student")">
-        <div>
-            <label for="name">Student Name:</label>
-            <input type="text" id="name" name="name" required />
-        </div>
-        <div>
-            <label for="fingerprintId">Fingerprint ID:</label>
-            <input type="text" id="fingerprintId" readonly name="fingerprintId" />
-            <button type="button" id="enrollButton">Enroll</button>
-        </div>
-        <button type="submit">Add Student</button>
-    </form>
+<div>
+    <h2 style="color: white;">Add Student</h2>
+    <div id="statusMessage" style="color:white;">🔌 Waiting for Arduino connection...</div>
+    <div id="studentForm" style="display: none; color: white;">
+        <form method="post" action="@Url.Action("AddStudent", "Student")">
+            <div>
+                <label for="name">Student Name:</label>
+                <input type="text" id="name" name="name" required />
+            </div>
+            <div>
+                <label for="fingerprintId">Fingerprint ID:</label>
+                <input type="text" id="fingerprintId" readonly name="fingerprintId" />
+                <button type="button" id="enrollButton">Enroll</button>
+            </div>
+            <button type="submit">Add Student</button>
+        </form>
+    </div>
 </div>
 
 <div id="serialConsole" style="background: black; color: lime; padding: 10px; margin-top: 20px; height: 200px; overflow-y: auto;">
