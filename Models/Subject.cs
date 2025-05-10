@@ -7,7 +7,7 @@ namespace AttendanceSystem.Models
         public int SubjectID { get; set; }
         public string SubjectName { get; set; }
         public string ProfessorID { get; set; }
-        public IdentityUser Professor { get; set; }
+        public ApplicationUser Professor { get; set; }
         public ICollection<Attendance> Attendances { get; set; }
 
     }

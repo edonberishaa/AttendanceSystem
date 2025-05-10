@@ -22,6 +22,12 @@
                 <h1 class="h4 mb-3 fw-normal">Please register</h1>
             </div>
             <div class="form-floating mb-3">
+                <input type="text" asp-for="FullName" class="form-control bg-glass" id="floatingName" placeholder="Filan Fisteku" required>
+                <label for="floatingName" class="bg-trans">Full Name</label>
+                <span class="text-danger" asp-validation-for="FullName"></span>
+            </div>
+
+            <div class="form-floating mb-3">
                 <input type="email" asp-for="Email" class="form-control bg-glass" id="floatingInput" placeholder="name@example.com" required>
                 <label for="floatingInput" class="bg-trans">Email address</label>
                 <span class="text-danger" asp-validation-for="Email"></span>

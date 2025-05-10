@@ -1,5 +1,4 @@
-﻿@model IEnumerable<Microsoft.AspNetCore.Identity.IdentityUser>
-
+﻿@model IEnumerable<AttendanceSystem.Models.ApplicationUser>
 <h2>All Professors</h2>
 
 @if (Model.Any())
@@ -7,6 +6,7 @@
     <table class="table">
         <thead>
             <tr>
+                <th>Full Name</th>
                 <th>Username</th>
                 <th>Email</th>
             </tr>
@@ -15,6 +15,7 @@
             @foreach (var professor in Model)
             {
                 <tr>
+                    <td>@professor.FullName</td>
                     <td>@professor.UserName</td>
                     <td>@professor.Email</td>
                 </tr>

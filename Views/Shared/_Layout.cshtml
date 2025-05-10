@@ -68,6 +68,16 @@
                             Subjects
                         </li>
                     </a>
+
+                    <a asp-controller="Account" asp-action="Register" class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Register" ? "active" : "")">
+                    <li>
+                        <div class="list-logo">
+                            <i class="fa-solid fa-book"></i>
+                        </div>
+                        Register Professors
+                    </li>
+                    </a>
+                    
                 }
             </ul>
         </div>

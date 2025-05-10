@@ -14,7 +14,7 @@
     @if (User.Identity.IsAuthenticated)
     {
         <div class="welcome-message">
-            Welcome, Professor <strong>@User.Identity.Name</strong>
+            Welcome, Professor <strong>@ViewBag.ProfessorFullName</strong>
         </div>
     }
 
