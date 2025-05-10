@@ -1,4 +1,5 @@
-﻿ using AttendanceSystem.ViewModels;
+﻿using AttendanceSystem.Models;
+using AttendanceSystem.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -7,11 +8,11 @@ namespace AttendanceSystem.Controllers
 {
     public class AccountController : Controller
     {
-        private readonly UserManager<IdentityUser> _userManager;
-        private readonly SignInManager<IdentityUser> _signInManager;
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly RoleManager<IdentityRole> _roleManager;
 
-        public AccountController(UserManager<IdentityUser> userManager,SignInManager<IdentityUser> signInManager, RoleManager<IdentityRole> roleManager)
+        public AccountController(UserManager<ApplicationUser> userManager,SignInManager<ApplicationUser> signInManager, RoleManager<IdentityRole> roleManager)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -36,7 +37,7 @@ namespace AttendanceSystem.Controllers
         {
             var hasUsers = _userManager.Users.Any();
 
-            var user = new IdentityUser { UserName = registerVM.Email, Email = registerVM.Email };
+            var user = new ApplicationUser { UserName = registerVM.Email, Email = registerVM.Email,FullName=registerVM.FullName };
             var result = await _userManager.CreateAsync(user, registerVM.Password);
 
             if (result.Succeeded)

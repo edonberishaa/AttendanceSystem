@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Concurrent;
 using System.IO.Ports;
+using System.Threading.Tasks;
 
 namespace AttendanceSystem.Controllers
 {
@@ -21,13 +22,13 @@ namespace AttendanceSystem.Controllers
         private static SerialPort? _serialPort;
         private static ConcurrentQueue<string> SerialLogs = new ConcurrentQueue<string>();
         private readonly IHubContext<ArduinoHub> _arduinoHub;
-        private readonly UserManager<IdentityUser> _userManager;
+        private readonly UserManager<ApplicationUser> _userManager;
 
         public static class ArduinoHelper
         {
             public static bool IsConnected = false;
         }
-        public ProfessorController(AppDbContext context, IHubContext<ArduinoHub> arduinoHub, ArduinoService arduino, UserManager<IdentityUser> userManager)
+        public ProfessorController(AppDbContext context, IHubContext<ArduinoHub> arduinoHub, ArduinoService arduino, UserManager<ApplicationUser> userManager)
         {
             _context = context;
             _arduinoHub = arduinoHub;
@@ -308,9 +309,11 @@ namespace AttendanceSystem.Controllers
 
             return RedirectToAction("ViewStudents", new { subjectId });
         }
-        public IActionResult Dashboard()
+        public async Task<IActionResult> Dashboard()
         {
             var professorEmail = User.Identity.Name;
+            var user = await _userManager.GetUserAsync(User);
+            ViewBag.ProfessorFullName = user.FullName;
 
             var professor = _context.Users.FirstOrDefault(u => u.Email == professorEmail);
             if (professor == null)

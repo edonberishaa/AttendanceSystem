@@ -1,4 +1,5 @@
-﻿using DocumentFormat.OpenXml.Spreadsheet;
+﻿using AttendanceSystem.Models;
+using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.AspNetCore.Identity;
 
 namespace AttendanceSystem.Data
@@ -8,7 +9,7 @@ namespace AttendanceSystem.Data
         public static async Task InitializeAsync(IServiceProvider serviceProvider)
         {
             var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-            var userManager = serviceProvider.GetRequiredService<UserManager<IdentityUser>>();
+            var userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 
             string[] roles = { "Admin", "Professor" };
             foreach(var role in roles)
@@ -21,13 +22,15 @@ namespace AttendanceSystem.Data
 
             var adminEmail = "umib@umib.net";
             var adminPassword = "Umib123.";
+            var adminName = "Admin";
+
             var adminUser = await userManager.FindByEmailAsync(adminEmail);
 
             if(adminUser == null)
             {
-                adminUser = new IdentityUser
+                adminUser = new ApplicationUser
                 {
-                    UserName = adminEmail,
+                    UserName = adminName,
                     Email = adminEmail
                 };
                 var result = await userManager.CreateAsync(adminUser, adminPassword);

@@ -80,6 +80,11 @@
 
     <div class="details-pair">
         <span class="details-label">@Html.DisplayNameFor(model => model.Professor)</span>
+        <span class="details-value">@Html.DisplayFor(model => model.Professor.FullName)</span>
+    </div>
+
+    <div class="details-pair">
+        <span class="details-label">@Html.DisplayNameFor(model => model.Professor)</span>
         <span class="details-value">@Html.DisplayFor(model => model.Professor.Email)</span>
     </div>
 

@@ -99,6 +99,7 @@ else
         {
             <div class="subject-card">
                 <div class="subject-title">@item.SubjectName</div>
+                <div class="professor-email">@item.Professor.FullName</div>
                 <div class="professor-email">@item.Professor.Email</div>
                 <div class="action-links">
                     <a asp-action="Details" asp-route-id="@item.SubjectID">Details</a>

@@ -1,5 +1,6 @@
 using AttendanceSystem.Data;
 using AttendanceSystem.Hubs;
+using AttendanceSystem.Models;
 using AttendanceSystem.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -11,7 +12,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnectionString")));
 
 // Identity Configuration
-builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {
     options.Password.RequireDigit = true;
     options.Password.RequireLowercase = true;

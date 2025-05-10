@@ -106,9 +106,15 @@
                     <td>@student.Name</td>
                     <td>@student.FingerprintID</td>
                     <td>
-                        <a href="@Url.Action("RemoveStudent", "Professor", new { subjectId = ViewBag.SubjectId, studentId = student.StudentID })"
+                        <form method="post" asp-controller="Professor" asp-action="RemoveStudent" asp-route-subjectId="@ViewBag.SubjectId" asp-route-studentId="@student.StudentID">
+                            @Html.AntiForgeryToken()
+                            <button type="submit"
+                                onclick="return confirm('Are you sure you want to remove this student from the subject?')" 
+                                class="btn btn-remove">Remove Student</button>
+                        </form>
+                     @*    <a href="@Url.Action("RemoveStudent", "Professor", new { subjectId = ViewBag.SubjectId, studentId = student.StudentID })"
                            onclick="return confirm('Are you sure you want to remove this student from the subject?')"
-                           class="btn btn-remove">🗑️ Remove</a>
+                           class="btn btn-remove">🗑️ Remove</a> *@
                     </td>
                 </tr>
             }
