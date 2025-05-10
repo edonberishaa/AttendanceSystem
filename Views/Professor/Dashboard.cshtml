@@ -2,10 +2,6 @@
 
 <head>
     <style>
-        main {
-            padding: 20px;
-        }
-
         .welcome-message {
             background: rgba(255, 255, 255, 0.05);
             padding: 16px 24px;
@@ -101,7 +97,14 @@
 @if (User.Identity.IsAuthenticated)
 {
 	<div class="welcome-message">
-		Welcome, Professor <strong>@User.Identity.Name</strong>
+        Welcome, @if (User.IsInRole("Admin"))
+        {
+            <span>Admin</span>
+        }
+        else
+        {
+            <span>Prof.</span>
+        } <strong>@User.Identity.Name</strong>
 	</div>
 }
 
