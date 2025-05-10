@@ -18,7 +18,7 @@ body {
 }
 
 .navigation {
-    width: 300px;
+    width: 330px;
     height: 100vh;
     background-color: #1e1e1e;
     color: #fff;
@@ -28,7 +28,7 @@ body {
 }
 
 .list {
-    width: 80%;
+    width: 90%;
     margin: 15px auto;
     h6 {
            color: #b0b0b0;
@@ -37,7 +37,7 @@ body {
         padding: 0;
         a
         {
-            padding: 10px 20px;
+            padding: 10px;
             margin-bottom: 5px;
             display: flex;
             flex-direction: row;
@@ -50,12 +50,16 @@ body {
                 list-style: none;
                 display: flex;
                 flex-direction: row;
+                padding-left: 25px;
+                align-items: center;
                 .list-logo
                 {
                     width: 30px;
                     display: flex;
                     justify-content: center;
                     align-items: center;
+                    position: absolute;
+                    left: 20px;
                 }
             }
         }
@@ -69,6 +73,15 @@ body {
 
 .navbar-brand {
     margin: 25px 0 35px 0;
+    font-size: 18px;
+    display: flex;
+    gap: 5px;
+    flex-direction: row;    
+    align-items: center;
+    img {
+            width: 35px;
+            height: 35px;
+        }
 }
 
 .content {
@@ -169,11 +182,9 @@ body {
     border: none;
     box-shadow: none;
     &:focus
-
-{
-    box-shadow: none;
-}
-
+    {
+        box-shadow: none;
+    }
 }
 
 .bg-img {
@@ -224,8 +235,4 @@ body {
 
 .txt-white:hover {
     color: #bbb;
-}
-
-.navbar-brand {
-    
 }

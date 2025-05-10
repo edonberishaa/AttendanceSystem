@@ -1,5 +1,5 @@
 ﻿<!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-bs-theme="dark">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -17,7 +17,7 @@
 <body>
     <div class="navigation">
         <a asp-controller="Home" asp-action="Index" class="navbar-brand">
-            <img src="~/favicon.png" alt="Logo" class="logo" width="30px" height="30px" class="d-inline-block align-text-top"/>
+            <img src="~/favicon.png" alt="Logo" class="logo" class="d-inline-block align-text-top"/>
             Fingerprint Attendance 
         </a>
         <div class="list">
@@ -33,10 +33,10 @@
                 </a>
                 @if (User.IsInRole("Admin"))
                 {
-                    <a asp-controller="Professor" asp-action="AllProfessors" class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Admin" ? "active" : "")">
+                    <a asp-controller="Professor" asp-action="AllProfessors" class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Professor" && ViewContext.RouteData.Values["Action"].ToString() == "AllProfessors" ? "active" : "")">
                         <li>
                             <div class="list-logo">
-                                <i class="fa-solid fa-graduation-cap"></i>
+                            <i class="fa-solid fa-user-tie"></i>
                             </div>
                             View Available Professors 
                         </li>
@@ -50,7 +50,7 @@
                         Students                
                     </li>
                 </a>
-                <a asp-controller="Professor" asp-action="Dashboard" class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Professor" ? "active" : "")">
+                <a asp-controller="Professor" asp-action="Dashboard" class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Professor" && !(ViewContext.RouteData.Values["Action"].ToString() == "AllProfessors") ? "active" : "")">
                     <li>
                         <div class="list-logo">
                             <i class="fa-solid fa-users"></i>
@@ -60,7 +60,7 @@
                 </a>
                 @if (User.IsInRole("Admin"))
                 {
-                    <a asp-controller="Subjects" asp-action="Index" class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Subjects" ? "active" : "")">
+                    <a asp-controller="Subjects" asp-action="Dashboard" class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Subjects" ? "active" : "")">
                         <li>
                             <div class="list-logo">
                                 <i class="fa-solid fa-book"></i>
@@ -94,13 +94,13 @@
                     </div>
                     <img src="~/img/user.png" alt="Alternate Text" />
                 </a>
-                <ul class="dropdown-menu">
-                    <li class="dropdown-item">
-                        <form method="post" asp-controller="Account" asp-action="Logout">
-                            <button type="submit" class="btn btn-link nav-link">Log out</button>
-                        </form>
-                    </li>
-                </ul>
+				<form method="post" asp-controller="Account" asp-action="Logout">
+					<button type="submit" class="btn btn-link nav-link">
+					    <ul class="dropdown-menu">
+                            <li class="dropdown-item">Log out</li>
+						</ul>
+					</button>
+				</form>
             }
             
         </div>
