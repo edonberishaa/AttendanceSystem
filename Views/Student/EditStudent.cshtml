@@ -1,5 +1,9 @@
 ﻿@model Student
 
+@{
+    ViewData["Title"] = "Edit Student";
+}
+
 <h2>Edit Student</h2>
 <form asp-action="EditStudent" method="post">
     <input type="hidden" name="id" value="@Model.StudentID" />
