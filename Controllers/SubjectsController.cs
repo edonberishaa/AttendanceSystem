@@ -30,7 +30,6 @@ namespace AttendanceSystem.Controllers
         }
 
         // GET: Subjects/Details/5
-        [HttpGet("{id}")]
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -111,7 +110,7 @@ namespace AttendanceSystem.Controllers
                 return NotFound();
             }
 
-            if (ModelState.IsValid) // Corrected condition
+            if (!ModelState.IsValid)
             {
                 try
                 {
@@ -131,7 +130,7 @@ namespace AttendanceSystem.Controllers
                 }
                 return RedirectToAction(nameof(Dashboard));
             }
-            ViewData["ProfessorID"] = new SelectList(_context.Users, "Id", "Id", subject.ProfessorID);
+            ViewData["ProfessorID"] = new SelectList(_context.Users, "Id", "Email", subject.ProfessorID);
             return View(subject);
         }
 
@@ -158,7 +157,7 @@ namespace AttendanceSystem.Controllers
         // POST: Subjects/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        public async Task<IActionResult> Delete(int id)
         {
             var subject = await _context.Subjects.FindAsync(id);
             if (subject != null)
@@ -166,7 +165,6 @@ namespace AttendanceSystem.Controllers
                 _context.Subjects.Remove(subject);
             }
 
-            _context.Subjects.Remove(subject);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Dashboard));
         }

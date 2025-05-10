@@ -25,7 +25,7 @@ The **Attendance System** is a web-based application developed to streamline and
 |-----------------|-----------------------------------------------|
 | Edon Berisha    | Full Stack Developer & Project Lead           |
 | Alban Rrahmani  | Hardware Engineer, Full-Stack Developer       |
-| Petrit Rexha    | Data Analyst                                  |
+| Petrit Rexha    | Backend Developer, Data Analyst               |
 | Leutrim Istrefi | Node.js Developer                             |
 
 ---
