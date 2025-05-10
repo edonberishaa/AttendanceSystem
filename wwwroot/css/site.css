@@ -1,15 +1,19 @@
 html {
-  font-size: 14px;
+    font-size: 14px;
 }
 
 @media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
+    html {
+        font-size: 16px;
+    }
 }
 
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+.btn:focus,
+.btn:active:focus,
+.btn-link.nav-link:focus,
+.form-control:focus,
+.form-check-input:focus {
+    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
 }
 
 body {
@@ -25,18 +29,22 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
+    position: sticky;
+    top: 0;
 }
 
 .list {
     width: 90%;
     margin: 15px auto;
+
     h6 {
-           color: #b0b0b0;
-       }
+        color: #b0b0b0;
+    }
+
     ul {
         padding: 0;
-        a
-        {
+
+        a {
             padding: 10px;
             margin-bottom: 5px;
             display: flex;
@@ -45,15 +53,15 @@ body {
             text-decoration: none;
             color: #b0b0b0;
             background-color: #333;
-            li
-            {
+
+            li {
                 list-style: none;
                 display: flex;
                 flex-direction: row;
                 padding-left: 25px;
                 align-items: center;
-                .list-logo
-                {
+
+                .list-logo {
                     width: 30px;
                     display: flex;
                     justify-content: center;
@@ -63,8 +71,8 @@ body {
                 }
             }
         }
-        a.active
-        {
+
+        a.active {
             background-color: #3a82f7;
             color: #fff;
         }
@@ -76,12 +84,13 @@ body {
     font-size: 18px;
     display: flex;
     gap: 5px;
-    flex-direction: row;    
+    flex-direction: row;
     align-items: center;
+
     img {
-            width: 35px;
-            height: 35px;
-        }
+        width: 35px;
+        height: 35px;
+    }
 }
 
 .content {
@@ -96,8 +105,12 @@ body {
     flex-direction: row;
     justify-content: flex-end;
     align-items: center;
-    a
-    {
+    position: sticky;
+    top: 0;
+    z-index: 9999;
+    background: linear-gradient(180deg, rgba(18, 18, 18, 1) 0%, rgba(18, 18, 18, 1) 75%, rgba(18, 18, 18, 0) 100%);
+
+    a {
         text-decoration: none;
         height: fit-content;
         display: flex;
@@ -109,22 +122,25 @@ body {
         padding-left: 10px;
         border-radius: 25px;
         background-color: #555;
+
         div {
             h6 {
-                    margin: 0;
-                    color: #ffffff;
+                margin: 0;
+                color: #ffffff;
             }
+
             p {
                 margin: 0;
                 font-size: 12px;
                 color: #b0b0b0;
             }
         }
-        img
-        {
+
+        img {
             width: 40px;
             height: 40px;
         }
+
         &::after {
             content: none;
         }
@@ -136,6 +152,7 @@ body {
     flex-direction: row;
     justify-content: center;
     gap: 30px;
+
     .card {
         width: 20%;
         aspect-ratio: 4/3;
@@ -146,12 +163,15 @@ body {
         display: flex;
         flex-direction: column;
         justify-content: flex-end;
+
         &:nth-child(even) {
-        background-color: #FFD700;
+            background-color: #FFD700;
         }
+
         h6 {
             font-size: 3rem;
         }
+
         p {
             font-size: 1.5rem;
             margin-bottom: 0;
@@ -159,13 +179,15 @@ body {
     }
 }
 
-.form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
-  color: var(--bs-secondary-color);
-  text-align: end;
+.form-floating>.form-control-plaintext::placeholder,
+.form-floating>.form-control::placeholder {
+    color: var(--bs-secondary-color);
+    text-align: end;
 }
 
-.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
-  text-align: start;
+.form-floating>.form-control-plaintext:focus::placeholder,
+.form-floating>.form-control:focus::placeholder {
+    text-align: start;
 }
 
 /*.navbar > .container-fluid {
@@ -181,8 +203,8 @@ body {
 .navbar-toggler {
     border: none;
     box-shadow: none;
-    &:focus
-    {
+
+    &:focus {
         box-shadow: none;
     }
 }
@@ -195,23 +217,23 @@ body {
 }
 
 .bg-glass {
-    background: rgba( 255, 255, 255, 0.2 );
-    box-shadow: 0 8px 32px 0 rgba( 31, 38, 135, 0.37 );
-    backdrop-filter: blur( 4px );
-    -webkit-backdrop-filter: blur( 4px );
-    border: 1px solid rgba( 255, 255, 255, 0.18 );
+    background: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
     color: #fff;
     margin: auto 0;
 }
 
-.form-floating > .form-control:focus ~ label::after {
+.form-floating>.form-control:focus~label::after {
     background-color: transparent;
     color: var(--bs-secondary-color);
 }
 
 .form-check-input {
-    --bs-form-check-bg: rgba( 255, 255, 255, 0.2 );
-    backdrop-filter: blur( 4px );
+    --bs-form-check-bg: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(4px);
     border: none;
 }
 
@@ -221,8 +243,8 @@ body {
 }
 
 .bg-trans::after {
-    background-color: rgba( 255, 255, 255, 0.2 ) !important;
-    backdrop-filter: blur( 4px );
+    background-color: rgba(255, 255, 255, 0.2) !important;
+    backdrop-filter: blur(4px);
 }
 
 .form-control:focus {
