@@ -1,48 +1,133 @@
 ﻿@model IEnumerable<Subject>
 
-<!DOCTYPE html>
-<html lang="en" data-bs-theme="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Professor Dashboard</title>
-    <link href="~/css/dashboard.css" rel="stylesheet" /> <!-- Link to external CSS -->
-</head>
-<body>
-
-    <!-- Welcome Message -->
-    @if (User.Identity.IsAuthenticated)
-    {
-        <div class="welcome-message">
-            Welcome, Professor <strong>@ViewBag.ProfessorFullName</strong>
-        </div>
-    }
-
-    <!-- Assigned Subjects Section -->
-    <h3 class="subject-list-title">Your Assigned Subjects:</h3>
-
-    <div class="row">
-        @foreach (var subject in Model)
-        {
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-header">
-                        <strong>@subject.SubjectName</strong>
-                    </div>
-                    <div class="card-body">
-                        <a href="@Url.Action("ViewStudents", "Professor", new { subjectId = subject.SubjectID })" class="btn btn-primary btn-custom">
-                            View Students
-                        </a>
-                        <a href="@Url.Action("RegisterStudent", "Professor", new { subjectId = subject.SubjectID })" class="btn btn-success btn-custom">
-                            Register Student
-                        </a>
-                        <a href="@Url.Action("AttendanceDashboard", "Professor", new { subjectId = subject.SubjectID })" class="btn btn-success btn-custom" >
-                            View Attendance Dashboard
-                        </a>
-                    </div>
-                </div>
-            </div>
+    <style>
+        main {
+            padding: 20px;
         }
-    </div>
-</body>
-</html>
+
+        .welcome-message {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 16px 24px;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 500;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+            color: #f3f4f6;
+        }
+
+        .subject-list-title {
+            font-size: 1.5rem;
+            margin-bottom: 25px;
+            color: #93c5fd;
+        }
+
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 24px;
+        }
+
+        .col-md-4 {
+            flex: 1 1 300px;
+            display: flex;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            transition: transform 0.2s ease;
+        }
+
+            .card:hover {
+                transform: translateY(-6px);
+            }
+
+        .card-header {
+            background-color: #1f2937;
+            padding: 16px 20px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #ffffff;
+            border-bottom: 1px solid #2d2d2d;
+        }
+
+        .card-body {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .btn-custom {
+            text-align: center;
+            padding: 10px 16px;
+            font-weight: 500;
+            border-radius: 6px;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            color: #fff;
+        }
+
+        .btn-primary {
+            background-color: #2563eb;
+        }
+
+            .btn-primary:hover {
+                background-color: #1d4ed8;
+                transform: scale(1.02);
+            }
+
+        .btn-success {
+            background-color: #16a34a;
+        }
+
+            .btn-success:hover {
+                background-color: #15803d;
+                transform: scale(1.02);
+            }
+    </style>
+
+</head>
+
+
+<!-- Welcome Message -->
+@if (User.Identity.IsAuthenticated)
+{
+	<div class="welcome-message">
+		Welcome, Professor <strong>@User.Identity.Name</strong>
+	</div>
+}
+
+<!-- Assigned Subjects Section -->
+<h3 class="subject-list-title">Your Assigned Subjects:</h3>
+
+<div class="row">
+	@foreach (var subject in Model)
+	{
+		<div class="col-md-4">
+			<div class="card">
+				<div class="card-header">
+					<strong>@subject.SubjectName</strong>
+				</div>
+				<div class="card-body">
+					<a href="@Url.Action("ViewStudents", "Professor", new { subjectId = subject.SubjectID })" class="btn btn-primary btn-custom">
+						View Students
+					</a>
+					<a href="@Url.Action("RegisterStudent", "Professor", new { subjectId = subject.SubjectID })" class="btn btn-success btn-custom">
+						Register Student
+					</a>
+					<a href="@Url.Action("AttendanceDashboard", "Professor", new { subjectId = subject.SubjectID })" class="btn btn-success btn-custom">
+						View Attendance Dashboard
+					</a>
+				</div>
+			</div>
+		</div>
+	}
+</div>
