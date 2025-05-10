@@ -1,7 +1,7 @@
 ﻿@model AttendanceSystem.Models.Subject
 
 @{
-    ViewData["Title"] = "Delete Subject";
+    ViewData["Title"] = "Delete";
 }
 
 <h1>Delete</h1>
@@ -28,6 +28,6 @@
     <form asp-action="Delete" asp-route-id="@Model.SubjectID">
         <input type="hidden" asp-for="SubjectID" />
         <input type="submit" value="Delete" class="btn btn-danger" /> |
-        <a asp-action="Index">Back to List</a>
+        <a asp-action="Dashboard">Back to List</a>
     </form>
 </div>

@@ -23,7 +23,7 @@ namespace AttendanceSystem.Controllers
 
         // GET: Subjects
         [HttpGet]
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Dashboard()
         {
             var appDbContext = _context.Subjects.Include(s => s.Professor);
             return View(await appDbContext.ToListAsync());
@@ -74,7 +74,7 @@ namespace AttendanceSystem.Controllers
                 }
                 _context.Add(subject);
                 await _context.SaveChangesAsync();
-                return RedirectToAction("Index");
+                return RedirectToAction("Dashboard");
             }
             ViewData["ProfessorID"] = new SelectList(_context.Users, "Id", "Email", subject.ProfessorID);
             return View(subject);
@@ -128,11 +128,12 @@ namespace AttendanceSystem.Controllers
                         throw;
                     }
                 }
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction(nameof(Dashboard));
             }
             ViewData["ProfessorID"] = new SelectList(_context.Users, "Id", "Email", subject.ProfessorID);
             return View(subject);
         }
+
 
         // GET: Subjects/Delete/5
         public async Task<IActionResult> Delete(int? id)
@@ -165,8 +166,9 @@ namespace AttendanceSystem.Controllers
             }
 
             await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(nameof(Dashboard));
         }
+
 
         private bool SubjectExists(int id)
         {

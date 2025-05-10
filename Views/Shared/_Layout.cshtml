@@ -1,5 +1,5 @@
 ﻿<!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-bs-theme="dark">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -17,7 +17,7 @@
 <body>
     <div class="navigation">
         <a asp-controller="Home" asp-action="Index" class="navbar-brand">
-            <img src="~/favicon.png" alt="Logo" class="logo" width="30px" height="30px" class="d-inline-block align-text-top"/>
+            <img src="~/favicon.png" alt="Logo" class="logo" class="d-inline-block align-text-top"/>
             Fingerprint Attendance 
         </a>
         <div class="list">
@@ -36,7 +36,7 @@
                     <a asp-controller="Professor" asp-action="AllProfessors" class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Professor" && ViewContext.RouteData.Values["Action"].ToString() == "AllProfessors" ? "active" : "")">
                         <li>
                             <div class="list-logo">
-                                <i class="fa-solid fa-graduation-cap"></i>
+                            <i class="fa-solid fa-user-tie"></i>
                             </div>
                             View Available Professors 
                         </li>
@@ -50,7 +50,7 @@
                         Students                
                     </li>
                 </a>
-                <a asp-controller="Professor" asp-action="Dashboard" class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Professor"  && !(ViewContext.RouteData.Values["Action"].ToString() == "AllProfessors") ? "active" : "")">
+                <a asp-controller="Professor" asp-action="Dashboard" class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Professor" && !(ViewContext.RouteData.Values["Action"].ToString() == "AllProfessors") ? "active" : "")">
                     <li>
                         <div class="list-logo">
                             <i class="fa-solid fa-users"></i>
@@ -60,7 +60,7 @@
                 </a>
                 @if (User.IsInRole("Admin"))
                 {
-                    <a asp-controller="Subjects" asp-action="Index" class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Subjects" ? "active" : "")">
+                    <a asp-controller="Subjects" asp-action="Dashboard" class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Subjects" ? "active" : "")">
                         <li>
                             <div class="list-logo">
                                 <i class="fa-solid fa-book"></i>
@@ -74,7 +74,7 @@
     </div>
     <div class="content">
         <div class="account">
-            <div style="display: flex; align-items: center; gap: 8px;" class="status-indicator">
+            <div style="display: flex; align-items: center; gap: 8px;">
                 <div id="statusDot" style="width: 10px; height: 10px; border-radius: 50%; background-color: gray;"></div>
                 <span id="statusText" style="color: white; font-size: 0.9em;">Checking...</span>
             </div>
@@ -94,13 +94,13 @@
                     </div>
                     <img src="~/img/user.png" alt="Alternate Text" />
                 </a>
-                <ul class="dropdown-menu" style="flex-direction: row-reverse">
-                    <li class="dropdown-item">
-                        <form method="post" asp-controller="Account" asp-action="Logout">
-                            <button type="submit" class="btn btn-link nav-link">Log out</button>
-                        </form>
-                    </li>
-                </ul>
+				<form method="post" asp-controller="Account" asp-action="Logout">
+					<button type="submit" class="btn btn-link nav-link">
+					    <ul class="dropdown-menu">
+                            <li class="dropdown-item">Log out</li>
+						</ul>
+					</button>
+				</form>
             }
             
         </div>
@@ -126,10 +126,10 @@
                     const text = document.getElementById("statusText");
                     if (data.connected) {
                         dot.style.backgroundColor = "lime";
-                        text.textContent = "Device is connected and ready.";
+                        text.textContent = "Connected";
                     } else {
                         dot.style.backgroundColor = "red";
-                        text.textContent = "No device detected. Please connect a device to continue.";
+                        text.textContent = "Disconnected";
                     }
                 })
                 .catch(() => {

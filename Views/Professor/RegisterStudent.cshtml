@@ -4,11 +4,77 @@
     ViewData["Title"] = "Add Student";
 }
 
+<!-- ==== CUSTOM STYLES FOR REGISTER FORM ==== -->
+<style>
+    main {
+        padding: 20px;
+    }
+
+    h2 {
+        font-size: 2rem;
+        margin-bottom: 25px;
+        color: #f3f4f6;
+    }
+
+    .register-container {
+        max-width: 500px;
+        background: rgba(255, 255, 255, 0.05);
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    label {
+        display: block;
+        margin-bottom: 6px;
+        font-weight: 500;
+        color: #d1d5db;
+    }
+
+    select {
+        width: 100%;
+        padding: 10px 12px;
+        border-radius: 6px;
+        border: none;
+        background-color: #1f1f1f;
+        color: #f3f3f3;
+        font-size: 1rem;
+    }
+
+        select:focus {
+            outline: 2px solid #3b82f6;
+            background-color: #1a1a1a;
+        }
+
+    .btn-register {
+        background-color: #2563eb;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        font-weight: 600;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: background 0.3s ease, transform 0.2s ease;
+    }
+
+        .btn-register:hover {
+            background-color: #1d4ed8;
+            transform: scale(1.03);
+        }
+</style>
+
+<!-- ==== VIEW CONTENT ==== -->
 <h2>Register Students to @ViewBag.SubjectName</h2>
-<div id="studentForm" style=" color: white;">
+
+<div class="register-container">
     <form method="post" action="@Url.Action("RegisterStudent", "Professor")">
         <input type="hidden" name="subjectId" value="@ViewBag.SubjectId" />
-        <div>
+
+        <div class="form-group">
             <label>Select Student:</label>
             <select name="studentId" required>
                 @foreach (var student in Model)
@@ -16,55 +82,8 @@
                     <option value="@student.StudentID">@student.Name (Fingerprint ID: @student.FingerprintID)</option>
                 }
             </select>
-            <button type="button" id="verifyButton">Enroll</button>
         </div>
-        <button type="submit">Register</button>
+
+        <button type="submit" class="btn-register">➕ Register</button>
     </form>
 </div>
-
-<div id="serialConsole" style="background: black; color: lime; padding: 10px; margin-top: 20px; height: 200px; overflow-y: auto;">
-    <h3>Serial Console</h3>
-</div>
-
-<script>
-    const studentForm = document.getElementById("studentForm");
-    const statusMessage = document.getElementById("statusMessage");
-
-    document.getElementById("verifyButton").addEventListener("click", function () {
-        fetch("/Professor/VerifyFingerprint", { method: "POST" })
-            .then(response => response.json())
-            .then(data => {
-                if (!data.success) {
-                    alert("Error: " + data.message);
-                }
-            })
-            .catch(err => console.error("Error sending verify command:", err));
-    });
-
-    connection.on("ReceiveSerialLog", function (message) {
-        console.log("📥 Serial Message:", message);
-
-        // Check if the message contains a connection confirmation
-        if (message.includes("ArduinoFingerPrintSensorReady")) {
-            studentForm.style.display = "flex";  // Make form visible
-            statusMessage.textContent = "✅ Fingerprint Sensor Connected!";
-        }
-
-        if (message.startsWith("ID")) {
-            let fingerprintId = message.substring(3);
-            console.log("This is the fingerprint ID:", fingerprintId);
-            document.getElementById("fingerprintId").value = fingerprintId;
-            alert("✅ Fingerprint Verified! ID: " + fingerprintId);
-        }
-
-        let logDiv = document.getElementById("serialConsole");
-        let logEntry = document.createElement("div");
-        logEntry.textContent = message;
-        logDiv.appendChild(logEntry);
-        logDiv.scrollTop = logDiv.scrollHeight;
-    });
-
-
-    connection.start().catch(err => console.error("❌ SignalR Error:", err));
-
-</script>
