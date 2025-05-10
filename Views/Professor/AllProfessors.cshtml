@@ -1,4 +1,57 @@
 ﻿@model IEnumerable<AttendanceSystem.Models.ApplicationUser>
+
+<head>
+    <style>
+        main {
+            padding: 20px;
+        }
+
+        h2 {
+            font-size: 2rem;
+            margin-bottom: 25px;
+            color: #f3f4f6;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+        }
+
+            .table thead {
+                background-color: #1f2937;
+            }
+
+            .table th,
+            .table td {
+                padding: 14px 16px;
+                text-align: left;
+                border-bottom: 1px solid #2a2a2a;
+            }
+
+            .table th {
+                color: #93c5fd;
+                font-weight: 600;
+            }
+
+            .table tbody tr:hover {
+                background-color: #1e293b;
+            }
+
+        .no-data {
+            color: #9ca3af;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 15px;
+            border-radius: 8px;
+            font-style: italic;
+            margin-top: 20px;
+        }
+    </style>
+
+</head>
 <h2>All Professors</h2>
 
 @if (Model.Any())
@@ -25,5 +78,5 @@
 }
 else
 {
-    <p>No professors found.</p>
+    <p class="no-data">📭 No professors found.</p>
 }
