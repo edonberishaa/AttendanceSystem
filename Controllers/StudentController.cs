@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.SignalR;
 using AttendanceSystem.Services;
 using NuGet.Packaging.Core;
 using AttendanceSystem.Hubs;
+using Newtonsoft.Json;
 
 namespace AttendanceSystem.Controllers
 {
@@ -86,7 +87,8 @@ namespace AttendanceSystem.Controllers
             return RedirectToAction("AllStudents");
         }
 
-        [HttpDelete("{id}")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public IActionResult DeleteStudent(int id)
         {
             var student = _context.Students.FirstOrDefault(s => s.StudentID == id);
@@ -94,10 +96,36 @@ namespace AttendanceSystem.Controllers
             {
                 return NotFound("Student not found");
             }
+            HttpContext.Session.SetString("DeletedStudent",JsonConvert.SerializeObject(student));
+            
             _context.Students.Remove(student);
             _context.SaveChanges();
+
+            TempData["DeletedStudent"] = "true";
+            TempData["DeletedStudentName"] = student.Name;
+
             return RedirectToAction("AllStudents");
         }
+        [HttpPost]
+        public IActionResult UndoDelete()
+        {
+            var deletedStudentJson = HttpContext.Session.GetString("DeletedStudent");
+
+            if(!string.IsNullOrEmpty(deletedStudentJson))
+            {
+                var deletedStudent = JsonConvert.DeserializeObject<Student>(deletedStudentJson);
+
+                _context.Students.Add(deletedStudent);
+                _context.SaveChanges();
+
+                HttpContext.Session.Remove("DeletedStudent");
+
+                return Json(new {success = true});
+            }
+            return Json(new {success = false});
+        }
+
+
         [HttpGet]
         public JsonResult GetArduinoStatus()
         {

@@ -59,6 +59,12 @@ builder.Services.AddSwaggerGen(options =>
 
 builder.Services.AddSignalR();
 builder.Services.AddSingleton<ArduinoService>();
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(30);
+    options.Cookie.HttpOnly = true;
+});
 
 var app = builder.Build();
 app.UseSwagger();
@@ -83,6 +89,8 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+
+app.UseSession();
 app.UseRouting();
 
 app.UseAuthentication();
