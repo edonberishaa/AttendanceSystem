@@ -101,9 +101,7 @@ else
                 <div class="subject-title">@item.SubjectName</div>
                 <div class="professor-email">@item.Professor.Email</div>
                 <div class="action-links">
-                    <a asp-action="Edit" asp-route-id="@item.SubjectID">Edit</a>
                     <a asp-action="Details" asp-route-id="@item.SubjectID">Details</a>
-                    <a asp-action="Delete" asp-route-id="@item.SubjectID">Delete</a>
                 </div>
             </div>
         }
