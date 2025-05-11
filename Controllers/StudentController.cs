@@ -34,12 +34,14 @@ namespace AttendanceSystem.Controllers
             return View(students);
         }
 
+        [Authorize(Roles ="Admin")]
         [HttpGet]
         public IActionResult AddStudent()
         {
             return View();
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         public IActionResult AddStudent(string name, int? fingerprintId)
         {
@@ -60,7 +62,7 @@ namespace AttendanceSystem.Controllers
             TempData["Message"] = "Student added successfully!";
             return RedirectToAction("AllStudents");
         }
-
+        [Authorize(Roles = "Admin")]
         public IActionResult EditStudent(int id)
         {
             var student = _context.Students.FirstOrDefault(s => s.StudentID == id);
@@ -71,6 +73,7 @@ namespace AttendanceSystem.Controllers
             return View(student);
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         public IActionResult EditStudent(int id, string name, int? fingerprintId)
         {

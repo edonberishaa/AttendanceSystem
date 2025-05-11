@@ -49,6 +49,33 @@ namespace AttendanceSystem.Controllers
             return View(users);
         }
         [HttpPost]
+        public IActionResult RemoveProfessor(string professorID)
+        {
+            var professor = _context.Users.FirstOrDefault(u => u.Id == professorID);
+
+            if (professor == null)
+            {
+                return NotFound("Professor not found.");
+            }
+
+            // Remove all subjects and related attendances associated with the professor
+            var subjects = _context.Subjects.Where(s => s.ProfessorID == professorID).ToList();
+            foreach (var subject in subjects)
+            {
+                var attendances = _context.Attendances.Where(a => a.SubjectID == subject.SubjectID);
+                _context.Attendances.RemoveRange(attendances);
+                _context.Subjects.Remove(subject);
+            }
+
+            // Remove the professor from the Users table
+            _context.Users.Remove(professor);
+            _context.SaveChanges();
+
+            TempData["SuccessMessage"] = "Professor removed successfully.";
+            return RedirectToAction("AllProfessors");
+        }
+
+        [HttpPost]
         public async Task<IActionResult> StartSession(int subjectId)
         {
             var professorEmail = User.Identity.Name;

@@ -36,7 +36,7 @@
                     <a asp-controller="Professor" asp-action="AllProfessors" class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Professor" && ViewContext.RouteData.Values["Action"].ToString() == "AllProfessors" ? "active" : "")">
                         <li>
                             <div class="list-logo">
-                            <i class="fa-solid fa-user-tie"></i>
+                                <i class="fa-solid fa-user-tie"></i>
                             </div>
                             View Available Professors 
                         </li>
@@ -50,14 +50,17 @@
                         Students                
                     </li>
                 </a>
-                <a asp-controller="Professor" asp-action="Dashboard" class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Professor" && !(ViewContext.RouteData.Values["Action"].ToString() == "AllProfessors") ? "active" : "")">
+                @if (!User.IsInRole("Admin"))
+                {
+                    <a asp-controller="Professor" asp-action="Dashboard" class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Professor" && !(ViewContext.RouteData.Values["Action"].ToString() == "AllProfessors") ? "active" : "")">
                     <li>
                         <div class="list-logo">
                             <i class="fa-solid fa-users"></i>
                         </div>
-                        Attendance               
+                        Attendance
                     </li>
-                </a>
+                    </a>
+                }
                 @if (User.IsInRole("Admin"))
                 {
                     <a asp-controller="Subjects" asp-action="Dashboard" class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Subjects" ? "active" : "")">

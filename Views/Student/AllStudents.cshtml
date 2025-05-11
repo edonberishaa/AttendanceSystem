@@ -3,85 +3,90 @@
 <head>
     <style>
         main {
-            padding: 20px;
+        padding: 20px;
         }
 
         h2 {
-            font-size: 2rem;
-            margin-bottom: 20px;
-            color: #f3f4f6;
+        font-size: 2rem;
+        margin-bottom: 20px;
+        color: #f3f4f6;
         }
 
         .btn-add {
-            display: inline-block;
-            background-color: #2563eb;
-            color: #fff;
-            padding: 10px 16px;
-            border-radius: 6px;
-            font-weight: 500;
-            text-decoration: none;
-            margin-bottom: 25px;
-            transition: background 0.2s ease, transform 0.2s ease;
+        display: inline-block;
+        background-color: #2563eb;
+        color: #fff;
+        padding: 10px 16px;
+        border-radius: 6px;
+        font-weight: 500;
+        text-decoration: none;
+        margin-bottom: 25px;
+        transition: background 0.2s ease, transform 0.2s ease;
         }
 
-            .btn-add:hover {
-                background-color: #1d4ed8;
-                transform: scale(1.03);
-            }
+        .btn-add:hover {
+        background-color: #1d4ed8;
+        transform: scale(1.03);
+        }
 
         table {
-            width: 100%;
-            border-collapse: collapse;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        width: 100%;
+        border-collapse: collapse;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
         }
 
         th, td {
-            padding: 14px 16px;
-            text-align: left;
-            border-bottom: 1px solid #2a2a2a;
+        padding: 14px 16px;
+        text-align: left;
+        border-bottom: 1px solid #2a2a2a;
         }
 
         thead {
-            background-color: #1f2937;
+        background-color: #1f2937;
         }
 
         th {
-            color: #93c5fd;
-            font-weight: 600;
+        color: #93c5fd;
+        font-weight: 600;
         }
 
         tr:hover {
-            background-color: #1e293b;
+        background-color: #1e293b;
         }
 
         .action-links a {
-            color: #60a5fa;
-            text-decoration: none;
-            margin-right: 12px;
-            font-weight: 500;
+        color: #60a5fa;
+        text-decoration: none;
+        margin-right: 12px;
+        font-weight: 500;
         }
 
-            .action-links a:hover {
-                text-decoration: underline;
-                color: #93c5fd;
-            }
+        .action-links a:hover {
+        text-decoration: underline;
+        color: #93c5fd;
+        }
     </style>
 </head>
 
 <h2>Student List</h2>
 
-<a asp-controller="Student" asp-action="AddStudent" class="btn-add"><i class="fa-solid fa-plus"></i> Add New Student</a>
-
+@if (User.IsInRole("Admin"))
+{
+    <a asp-controller="Student" asp-action="AddStudent" class="btn-add"><i class="fa-solid fa-plus"></i> Add New Student</a>
+}
 <table>
     <thead>
         <tr>
             <th>Student ID</th>
             <th>Name</th>
             <th>Fingerprint ID</th>
-            <th>Actions</th>
+            @if (User.IsInRole("Admin"))
+            {
+                <th>Actions</th>
+            }
         </tr>
     </thead>
     <tbody>
@@ -91,14 +96,17 @@
                 <td>@student.StudentID</td>
                 <td>@student.Name</td>
                 <td>@student.FingerprintID</td>
-                <td class="action-links">
-                    <a href="#"
-                       data-student-id="@student.StudentID"
-                       data-student-name="@student.Name"
-                       onclick="openDeleteModal(this)">🗑 Delete</a>
+                @if (User.IsInRole("Admin"))
+                {
+                    <td class="action-links">
+                        <a href="#"
+                           data-student-id="@student.StudentID"
+                           data-student-name="@student.Name"
+                           onclick="openDeleteModal(this)">🗑 Delete</a>
 
-                    <a href="@Url.Action("EditStudent", "Student", new { id = student.StudentID })">✏️ Edit</a>
-                </td>
+                        <a href="@Url.Action("EditStudent", "Student", new { id = student.StudentID })">✏️ Edit</a>
+                    </td>
+                }
             </tr>
         }
     </tbody>
