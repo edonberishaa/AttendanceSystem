@@ -38,6 +38,17 @@
                 <span class="text-danger" asp-validation-for="Password"></span>
             </div>
 
+            <div class="form-floating mb-3">
+                <div>
+                    <input type="radio" asp-for="Role" value="Admin" id="roleAdmin" />
+                    <label for="roleAdmin">Admin</label>
+                </div>
+                <div>
+                    <input type="radio" asp-for="Role" value="Professor" id="roleProfessor" />
+                    <label for="roleProfessor">Professor</label>
+                </div>
+            </div>
+
             <div class="d-grid">
                 <button type="submit" class="btn btn-primary btn-lg">Register</button>
             </div>

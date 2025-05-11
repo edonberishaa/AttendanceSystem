@@ -42,6 +42,8 @@ namespace AttendanceSystem.Controllers
 
             if (result.Succeeded)
             {
+                await _userManager.AddToRoleAsync(user, registerVM.Role);
+                TempData["Success"] = $"{registerVM.Role} account created successfully!";
                 return RedirectToAction("AllProfessors","Professor");
             }
             foreach(var error in result.Errors)
