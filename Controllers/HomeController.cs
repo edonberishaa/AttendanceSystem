@@ -20,8 +20,19 @@ namespace AttendanceSystem.Controllers
         [HttpGet]
         public IActionResult Index()
         {
-            var students = _context.Students.Count();
-            return View(students);
+            var studentsCount = _context.Students.Count();
+            var professorsCount = _context.Users
+                .Where(user => _context.UserRoles
+                    .Any(role => role.UserId == user.Id && role.RoleId == _context.Roles.FirstOrDefault(r => r.Name == "Professor").Id))
+                .Count();
+
+            var model = new
+            {
+                StudentsCount = studentsCount,
+                ProfessorsCount = professorsCount
+            };
+
+            return View(model);
         }
 
         public IActionResult Privacy()

@@ -102,7 +102,7 @@ app.MapHub<ArduinoHub>("/ArduinoHub");
 // Default Route
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Account}/{action=Login}")
+    pattern: "{controller=Home}/{action=Index}")
     .WithStaticAssets();
 
 app.Run();

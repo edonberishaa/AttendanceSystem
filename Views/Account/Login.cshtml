@@ -17,6 +17,7 @@
     <main class="form-signin w-100 m-auto" style="max-width: 400px;">
         <form asp-action="Login" method="post" class="p-4 rounded shadow bg-glass">
             <div asp-validation-summary="All" class="text-alert small"></div>
+            <input type="hidden" name="returnUrl" value="@ViewData["ReturnUrl"]" />
 
             <div class="text-center mb-3">
                 <img src="~/favicon.png" alt="Logo" class="mb-2" width="80px">

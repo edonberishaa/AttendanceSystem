@@ -54,19 +54,26 @@ namespace AttendanceSystem.Controllers
         }
 
         [HttpGet]
-        public IActionResult Login() => View();
+        public IActionResult Login(string returnUrl = null)
+        {
+            ViewData["ReturnUrl"] = returnUrl;
+            return View();
+        }
 
         [HttpPost]
-        public async Task<IActionResult> Login(LoginVM loginVM)
+        public async Task<IActionResult> Login(LoginVM loginVM, string returnUrl = null)
         {
+            returnUrl ??= Url.Content("~/");
             if (ModelState.IsValid)
             {
-             
-                var result = await _signInManager.PasswordSignInAsync(loginVM.Email, loginVM.Password,loginVM.RememberMe,false);
-                if (result.Succeeded)
-                    return RedirectToAction("Index", "Home");
+
+                var result = await _signInManager.PasswordSignInAsync(loginVM.Email, loginVM.Password, loginVM.RememberMe, false);
+                if (result.Succeeded) {
+                    return LocalRedirect(returnUrl);
+                }
                 ModelState.AddModelError("", "Invalid login attempt");
             }
+            ViewData["ReturnUrl"] = returnUrl;
             return View(loginVM);
         }
         [Authorize]
