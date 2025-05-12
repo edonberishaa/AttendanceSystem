@@ -32,27 +32,27 @@
 
                 @if (User.IsInRole("Admin"))
                 {
-                    <a href="" onclick="toggleDropdown(event)" class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Professor" ? "active" : "")">Professors</a>
-                    <a asp-controller="Professor" asp-action="AllProfessors" class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Professor" && ViewContext.RouteData.Values["Action"].ToString() == "AllProfessors" ? "active" : "") dropdown-toggle">
+                    <li>
+                        <a onclick="toggleDropdown(event)" class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Professor" || ViewContext.RouteData.Values["Controller"].ToString() == "Account"? "active" : "") dropdown-toggle">
+                            <div class="list-logo">
+                                <i class="fa-solid fa-user-tie"></i>
+                            </div>
+                            Professors
+                            <span class="dropdown-arrow" style="margin-left: 5px">
+                                <i class="fa-solid fa-caret-down"></i>
+                            </span>
+                        </a>
+                    </li>
+                    <a asp-controller="Professor" asp-action="AllProfessors" class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Professor" && ViewContext.RouteData.Values["Action"].ToString() == "AllProfessors" ? "active" : "") dropdown-item" id="dropdown1">
                         <li>
                             <div class="list-logo">
-                                <i class="fa-solid fa-user-tie"></i>View Available Professors
+                                <i class="fa-solid fa-user-tie"></i>
                             </div>
+                            View Available Professors
                         </li>
                     </a>
-                    <!-- Professors Group Header (Optional, can be styled differently if needed) -->
-                    <li class="text-muted ps-3 mt-3">Professors</li>
-
-                    <a asp-controller="Professor" asp-action="AllProfessors" class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Professor" && ViewContext.RouteData.Values["Action"].ToString() == "AllProfessors" ? "active" : "")">
-                    <li>
-                        <div class="list-logo">
-                            <i class="fa-solid fa-user-tie"></i>
-                        </div>
-                        View Available Professors
-                    </li>
-                    </a>
-
-                    <a asp-controller="Account" asp-action="Register" class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Account" && ViewContext.RouteData.Values["Action"].ToString() == "Register" ? "active" : "")">
+                    
+                    <a asp-controller="Account" asp-action="Register" class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Account" && ViewContext.RouteData.Values["Action"].ToString() == "Register" ? "active" : "") dropdown-item" id="dropdown2">
                     <li>
                         <div class="list-logo">
                             <i class="fa-solid fa-user-plus"></i>
