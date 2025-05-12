@@ -47,7 +47,9 @@ body {
 
     ul {
         padding: 0;
-
+        li {
+               list-style: none;
+           }
         a {
             padding: 10px;
             margin-bottom: 5px;
@@ -258,10 +260,31 @@ main {
     box-shadow: 4px 4px 4px 0.1rem white;
 }
 
-.txt-white {
-    color: #fff;
+.dropdown-toggle {
+    cursor: pointer;
+    text-decoration: none;
 }
 
-.txt-white:hover {
-    color: #bbb;
+.dropdown-toggle::after {
+    content: unset;
+}
+
+.dropdown-item {
+    display: none !important;
+}
+
+    .dropdown-menu a {
+        display: flex;
+    }
+
+.show {
+    display: flex !important;
+}
+
+.dropdown-arrow svg {
+    transition: transform 0.3s ease;
+}
+
+.dropdown-arrow.rotated svg {
+    transform: rotate(180deg);
 }

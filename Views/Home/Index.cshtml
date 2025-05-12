@@ -1,14 +1,16 @@
-﻿@model int
-@{
+﻿@{
     ViewData["Title"] = "Home Page";
 }
 
 <div class="cards">
     <div class="card">
-        <h6>@Model</h6>
+        <h6>@Model.StudentsCount</h6>
         <p>Students</p>
     </div>
-    <div class="card"></div>
+    <div class="card">
+        <h6>@Model.ProfessorsCount</h6>
+        <p>Professors</p>
+    </div>
     <div class="card"></div>
     <div class="card"></div>
 </div>
