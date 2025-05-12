@@ -50,7 +50,7 @@
                         Students                
                     </li>
                 </a>
-                @if (!User.IsInRole("Admin"))
+                @if (User.IsInRole("Professor"))
                 {
                     <a asp-controller="Professor" asp-action="Dashboard" class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Professor" && !(ViewContext.RouteData.Values["Action"].ToString() == "AllProfessors") ? "active" : "")">
                     <li>
