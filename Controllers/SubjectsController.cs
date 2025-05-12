@@ -73,6 +73,7 @@ namespace AttendanceSystem.Controllers
                     return View(subject);
                 }
                 _context.Add(subject);
+                TempData["Success"] = "Subject added successfully!";
                 await _context.SaveChangesAsync();
                 return RedirectToAction("Dashboard");
             }
@@ -115,6 +116,7 @@ namespace AttendanceSystem.Controllers
                 try
                 {
                     _context.Update(subject);
+                    TempData["SuccessEdit"] = "Subject edit successfully!";
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
@@ -163,6 +165,8 @@ namespace AttendanceSystem.Controllers
             if (subject != null)
             {
                 _context.Subjects.Remove(subject);
+                TempData["SuccessMessage"] = "Subject removed successfully!";
+
             }
 
             await _context.SaveChangesAsync();
