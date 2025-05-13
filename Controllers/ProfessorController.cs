@@ -305,6 +305,7 @@ namespace AttendanceSystem.Controllers
             };
 
             _context.Attendances.Add(attendance);
+            TempData["SuccessMessage"] = "Student registered successfully.";
             _context.SaveChanges();
 
             return RedirectToAction("ViewStudents", new { subjectId });
@@ -332,6 +333,8 @@ namespace AttendanceSystem.Controllers
                 return NotFound("Student is not registered in this subject.");
             }
             _context.Attendances.Remove(attendanceRecord);
+            TempData["Success"] = "Student removed successfully!";
+
             _context.SaveChanges();
 
             return RedirectToAction("ViewStudents", new { subjectId });
