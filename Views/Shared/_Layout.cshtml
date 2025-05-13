@@ -1,4 +1,14 @@
-﻿<!DOCTYPE html>
+﻿@using Microsoft.AspNetCore.Identity
+@inject UserManager<AttendanceSystem.Models.ApplicationUser> UserManager
+
+@{
+    // Fetch the current user
+    var currentUser = await UserManager.GetUserAsync(User);
+    string fullName = currentUser?.FullName ?? "Unknown User";
+}
+
+
+<!DOCTYPE html>
 <html lang="en" data-bs-theme="dark">
 <head>
     <meta charset="utf-8" />
@@ -11,7 +21,7 @@
     <link rel="icon" type="image/png" href="~/favicon.png" />
     <script src="https://kit.fontawesome.com/fc770c52cb.js" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
-   </head>
+</head>
 <body>
     <div class="navigation">
         <a asp-controller="Home" asp-action="Index" class="navbar-brand">
@@ -21,19 +31,18 @@
         <div class="list">
             <h6>MENU</h6>
             <ul>
-                <a asp-controller="Home" asp-action="Index" class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Home" ? "active" : "")">
                 <li>
-                    <div class="list-logo">
-                        <i class="fa-solid fa-house"></i>
-                    </div>
-                    Dashboard
+                    <a asp-controller="Home" asp-action="Index" class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Home" ? "active" : "")">
+                        <div class="list-logo">
+                            <i class="fa-solid fa-house"></i>
+                        </div>
+                        Dashboard
+                    </a>
                 </li>
-                </a>
-
                 @if (User.IsInRole("Admin"))
                 {
                     <li>
-                        <a onclick="toggleDropdown(event)" class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Professor" || ViewContext.RouteData.Values["Controller"].ToString() == "Account"? "active" : "") dropdown-toggle">
+                        <a onclick="toggleDropdown(event)" class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Professor" || ViewContext.RouteData.Values["Controller"].ToString() == "Account"? "active" : "") dropdown-toggler">
                             <div class="list-logo">
                                 <i class="fa-solid fa-user-tie"></i>
                             </div>
@@ -43,56 +52,55 @@
                             </span>
                         </a>
                     </li>
-                    <a asp-controller="Professor" asp-action="AllProfessors" class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Professor" && ViewContext.RouteData.Values["Action"].ToString() == "AllProfessors" ? "active" : "") dropdown-item" id="dropdown1">
+                    <div class="dropdown-container" id="dropdown-container">
                         <li>
-                            <div class="list-logo">
-                                <i class="fa-solid fa-user-tie"></i>
-                            </div>
-                            View Available Professors
+                            <a asp-controller="Professor" asp-action="AllProfessors" class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Professor" && ViewContext.RouteData.Values["Action"].ToString() == "AllProfessors" ? "active" : "") dropdown-item1" id="dropdown1">
+                                <div class="list-logo">
+                                    <i class="fa-solid fa-user-tie"></i>
+                                </div>
+                                View Available Professors
+                            </a>
                         </li>
-                    </a>
-                    
-                    <a asp-controller="Account" asp-action="Register" class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Account" && ViewContext.RouteData.Values["Action"].ToString() == "Register" ? "active" : "") dropdown-item" id="dropdown2">
-                    <li>
-                        <div class="list-logo">
-                            <i class="fa-solid fa-user-plus"></i>
-                        </div>
-                        Register Professors
-                    </li>
-                    </a>
-                }
-
-
-                <a asp-controller="Student" asp-action="AllStudents" class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Student" ? "active" : "")">
-                <li>
-                    <div class="list-logo">
-                        <i class="fa-solid fa-user-graduate"></i>
+                        <li>
+                            <a asp-controller="Account" asp-action="Register" class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Account" && ViewContext.RouteData.Values["Action"].ToString() == "Register" ? "active" : "") dropdown-item1" id="dropdown2">
+                                <div class="list-logo">
+                                    <i class="fa-solid fa-user-plus"></i>
+                                </div>
+                                Register Professors
+                            </a>
+                        </li>
                     </div>
-                    Students
+                }
+                <li>
+                    <a asp-controller="Student" asp-action="AllStudents" class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Student" ? "active" : "")">
+                        <div class="list-logo">
+                            <i class="fa-solid fa-user-graduate"></i>
+                        </div>
+                        Students
+                    </a>
                 </li>
-                </a>
                 @if (User.IsInRole("Professor"))
                 {
-                    <a asp-controller="Professor" asp-action="Dashboard" class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Professor" && !(ViewContext.RouteData.Values["Action"].ToString() == "AllProfessors") ? "active" : "")">
                     <li>
-                        <div class="list-logo">
-                            <i class="fa-solid fa-users"></i>
-                        </div>
-                        Attendance
+                        <a asp-controller="Professor" asp-action="Dashboard" class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Professor" && !(ViewContext.RouteData.Values["Action"].ToString() == "AllProfessors") ? "active" : "")">
+                            <div class="list-logo">
+                                <i class="fa-solid fa-users"></i>
+                            </div>
+                            Attendance
+                        </a>
                     </li>
-                    </a>
                 }
 
                 @if (User.IsInRole("Admin"))
                 {
-                    <a asp-controller="Subjects" asp-action="Dashboard" class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Subjects" ? "active" : "")">
                     <li>
-                        <div class="list-logo">
-                            <i class="fa-solid fa-book"></i>
-                        </div>
-                        Subjects
-                    </li>
-                    </a>
+                        <a asp-controller="Subjects" asp-action="Dashboard" class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Subjects" ? "active" : "")">
+                            <div class="list-logo">
+                                <i class="fa-solid fa-book"></i>
+                            </div>
+                            Subjects
+                        </a>
+			    </li>
                 }
             </ul>
 
@@ -100,16 +108,16 @@
     </div>
     <div class="content">
         <div class="account">
-            <div style="display: flex; align-items: center; gap: 8px;">
-                <div id="statusDot" style="width: 10px; height: 10px; border-radius: 50%; background-color: gray;"></div>
-                <span id="statusText" style="color: white; font-size: 0.9em;">Checking...</span>
+            <div class="status-indicator">
+                <div id="statusDot"></div>
+                <span id="statusText">Checking...</span>
             </div>
 
             @if (User.Identity.IsAuthenticated)
             {
                 <a href="#" class="dropdown-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                     <div>
-                        <h6>@User.Identity.Name</h6>
+                        <h6>@fullName</h6>
                         @if (User.IsInRole("Admin"))
                         {
                         <p>Admin</p>
@@ -120,7 +128,7 @@
                     </div>
                     <img src="~/img/user.png" alt="Alternate Text" />
                 </a>
-				<form method="post" asp-controller="Account" asp-action="Logout">
+				<form method="post" asp-controller="Account" asp-action="Logout" style="position:absolute">
 					<button type="submit" class="btn btn-link nav-link">
 					    <ul class="dropdown-menu">
                             <li class="dropdown-item">Log out</li>
@@ -143,35 +151,6 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
-    <script>
-        function checkArduinoStatus() {
-            fetch("/Arduino/IsConnected")
-                .then(res => res.json())
-                .then(data => {
-                    const dot = document.getElementById("statusDot");
-                    const text = document.getElementById("statusText");
-                    if (data.connected) {
-                        dot.style.backgroundColor = "lime";
-                        text.textContent = "Connected";
-                    } else {
-                        dot.style.backgroundColor = "red";
-                        text.textContent = "Disconnected";
-                    }
-                })
-                .catch(() => {
-                    // Handle errors or failed fetch (maybe disconnected)
-                    const dot = document.getElementById("statusDot");
-                    const text = document.getElementById("statusText");
-                    dot.style.backgroundColor = "red";
-                    text.textContent = "Disconnected";
-                });
-        }
-
-        // Initial check + interval
-        checkArduinoStatus();
-        setInterval(checkArduinoStatus, 5000); // every 5 seconds
-    </script>
-
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
