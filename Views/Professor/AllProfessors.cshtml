@@ -12,34 +12,7 @@
             color: #f3f4f6;
         }
 
-        .table {
-            width: 100%;
-            border-collapse: collapse;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
-        }
-
-            .table thead {
-                background-color: #1f2937;
-            }
-
-            .table th,
-            .table td {
-                padding: 14px 16px;
-                text-align: left;
-                border-bottom: 1px solid #2a2a2a;
-            }
-
-            .table th {
-                color: #93c5fd;
-                font-weight: 600;
-            }
-
-            .table tbody tr:hover {
-                background-color: #1e293b;
-            }
+        
 
         .no-data {
             color: #9ca3af;
@@ -78,13 +51,13 @@
         </div>
     }
 
-    <table class="table">
+    <table>
         <thead>
             <tr>
                 <th>Full Name</th>
                 <th>Username</th>
                 <th>Email</th>
-                <th>Actions</th>
+                <th class="actions-center">Actions</th>
             </tr>
         </thead>
         <tbody>
@@ -94,10 +67,10 @@
                     <td>@professor.FullName</td>
                     <td>@professor.UserName</td>
                     <td>@professor.Email</td>
-                    <td>
+                    <td class="actions-center">
                         <form asp-action="RemoveProfessor" asp-controller="Professor" method="post">
                             <input type="hidden" name="professorID" value="@professor.Id" />
-                            <button type="submit" class="btn-remove" onclick="return confirm('Are you sure you want to remove this professor?');">Remove</button>
+                            <button type="submit" class="remove-btn" onclick="return confirm('Are you sure you want to remove this professor?');">Remove</button>
                         </form>
 
                     </td>

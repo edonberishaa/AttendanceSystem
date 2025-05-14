@@ -12,51 +12,6 @@
         color: #f3f4f6;
         }
 
-        .btn-add {
-        display: inline-block;
-        background-color: #2563eb;
-        color: #fff;
-        padding: 10px 16px;
-        border-radius: 6px;
-        font-weight: 500;
-        text-decoration: none;
-        margin-bottom: 25px;
-        transition: background 0.2s ease, transform 0.2s ease;
-        }
-
-        .btn-add:hover {
-        background-color: #1d4ed8;
-        transform: scale(1.03);
-        }
-
-        table {
-        width: 100%;
-        border-collapse: collapse;
-        background: rgba(255, 255, 255, 0.05);
-        border-radius: 12px;
-        overflow: hidden;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-        }
-
-        th, td {
-        padding: 14px 16px;
-        text-align: left;
-        border-bottom: 1px solid #2a2a2a;
-        }
-
-        thead {
-        background-color: #1f2937;
-        }
-
-        th {
-        color: #93c5fd;
-        font-weight: 600;
-        }
-
-        tr:hover {
-        background-color: #1e293b;
-        }
-
         .action-links a {
         color: #60a5fa;
         text-decoration: none;
@@ -71,11 +26,11 @@
     </style>
 </head>
 
-<h2>Student List</h2>
+<h1>Student List</h1>
 
 @if (User.IsInRole("Admin"))
 {
-    <a asp-controller="Student" asp-action="AddStudent" class="btn-add"><i class="fa-solid fa-plus"></i> Add New Student</a>
+    <a asp-controller="Student" asp-action="AddStudent" class="add-btn"><i class="fa-solid fa-plus"></i> Add New Student</a>
 }
 <table>
     <thead>

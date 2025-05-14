@@ -23,7 +23,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
 </head>
 <body>
-    <div class="navigation">
+    <div class="navigation" id="navigation">
         <a asp-controller="Home" asp-action="Index" class="navbar-brand">
             <img src="~/favicon.png" alt="Logo" class="logo" class="d-inline-block align-text-top"/>
             Fingerprint Attendance 
@@ -31,8 +31,8 @@
         <div class="list">
             <h6>MENU</h6>
             <ul>
-                <li>
-                    <a asp-controller="Home" asp-action="Index" class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Home" ? "active" : "")">
+                <li class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Home" ? "active" : "")">
+                    <a asp-controller="Home" asp-action="Index">
                         <div class="list-logo">
                             <i class="fa-solid fa-house"></i>
                         </div>
@@ -41,8 +41,8 @@
                 </li>
                 @if (User.IsInRole("Admin"))
                 {
-                    <li>
-                        <a onclick="toggleDropdown(event)" class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Professor" || ViewContext.RouteData.Values["Controller"].ToString() == "Account"? "active" : "") dropdown-toggler">
+                    <li class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Professor" || ViewContext.RouteData.Values["Controller"].ToString() == "Account"? "active" : "")">
+                        <a onclick="toggleDropdown(event)"dropdown-toggler">
                             <div class="list-logo">
                                 <i class="fa-solid fa-user-tie"></i>
                             </div>
@@ -53,16 +53,16 @@
                         </a>
                     </li>
                     <div class="dropdown-container" id="dropdown-container">
-                        <li>
-                            <a asp-controller="Professor" asp-action="AllProfessors" class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Professor" && ViewContext.RouteData.Values["Action"].ToString() == "AllProfessors" ? "active" : "") dropdown-item1" id="dropdown1">
+                        <li class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Professor" && ViewContext.RouteData.Values["Action"].ToString() == "AllProfessors" ? "active" : "")">
+                            <a asp-controller="Professor" asp-action="AllProfessors" class="dropdown-item1" id="dropdown1">
                                 <div class="list-logo">
                                     <i class="fa-solid fa-user-tie"></i>
                                 </div>
                                 View Available Professors
                             </a>
                         </li>
-                        <li>
-                            <a asp-controller="Account" asp-action="Register" class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Account" && ViewContext.RouteData.Values["Action"].ToString() == "Register" ? "active" : "") dropdown-item1" id="dropdown2">
+                        <li class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Account" && ViewContext.RouteData.Values["Action"].ToString() == "Register" ? "active" : "")">
+                            <a asp-controller="Account" asp-action="Register" class="dropdown-item1" id="dropdown2">
                                 <div class="list-logo">
                                     <i class="fa-solid fa-user-plus"></i>
                                 </div>
@@ -71,8 +71,8 @@
                         </li>
                     </div>
                 }
-                <li>
-                    <a asp-controller="Student" asp-action="AllStudents" class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Student" ? "active" : "")">
+                <li class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Student" ? "active" : "")">
+                    <a asp-controller="Student" asp-action="AllStudents">
                         <div class="list-logo">
                             <i class="fa-solid fa-user-graduate"></i>
                         </div>
@@ -81,8 +81,8 @@
                 </li>
                 @if (User.IsInRole("Professor"))
                 {
-                    <li>
-                        <a asp-controller="Professor" asp-action="Dashboard" class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Professor" && !(ViewContext.RouteData.Values["Action"].ToString() == "AllProfessors") ? "active" : "")">
+                    <li class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Professor" && !(ViewContext.RouteData.Values["Action"].ToString() == "AllProfessors") ? "active" : "")">
+                        <a asp-controller="Professor" asp-action="Dashboard">
                             <div class="list-logo">
                                 <i class="fa-solid fa-users"></i>
                             </div>
@@ -93,8 +93,8 @@
 
                 @if (User.IsInRole("Admin"))
                 {
-                    <li>
-                        <a asp-controller="Subjects" asp-action="Dashboard" class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Subjects" ? "active" : "")">
+                <li class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Subjects" ? "active" : "")">
+                        <a asp-controller="Subjects" asp-action="Dashboard">
                             <div class="list-logo">
                                 <i class="fa-solid fa-book"></i>
                             </div>
