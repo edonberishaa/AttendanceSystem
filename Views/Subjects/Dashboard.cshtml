@@ -72,6 +72,18 @@
 }
 else
 {
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">@TempData["Success"]</div>
+    }
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+    }
+    @if (TempData["SuccessEdit"] != null)
+    {
+        <div class="alert alert-success">@TempData["SuccessEdit"]</div>
+    }
     <div class="card-container">
         @foreach (var item in Model)
         {

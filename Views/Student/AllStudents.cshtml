@@ -28,6 +28,15 @@
 
 <h1>Student List</h1>
 
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+}
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+}
 @if (User.IsInRole("Admin"))
 {
     <a asp-controller="Student" asp-action="AddStudent" class="add-btn"><i class="fa-solid fa-plus"></i> Add New Student</a>
