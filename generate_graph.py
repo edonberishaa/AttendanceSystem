@@ -30,7 +30,6 @@ graph_dir = os.path.join("AttendanceSystem", "wwwroot", "graphs")
 os.makedirs(graph_dir, exist_ok=True)
 output_path = os.path.join(graph_dir, "graph.png")
 
-# Step 5: Save the image
 plt.tight_layout()
 plt.savefig(output_path)
 
