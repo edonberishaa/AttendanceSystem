@@ -30,8 +30,9 @@ namespace AttendanceSystem.Data
             {
                 adminUser = new ApplicationUser
                 {
-                    UserName = adminName,
-                    Email = adminEmail
+                    UserName = adminEmail,
+                    Email = adminEmail,
+                    FullName = adminName
                 };
                 var result = await userManager.CreateAsync(adminUser, adminPassword);
                 if(result.Succeeded)

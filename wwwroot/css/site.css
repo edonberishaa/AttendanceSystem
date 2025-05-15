@@ -69,7 +69,7 @@ body {
 }
 
 .list ul li.active {
-    background: linear-gradient(135deg, #0000ff, #0399cc, #0000ff);
+    background: linear-gradient(135deg, #0000ff, #000055, #0000ff);
     color: #fff;
     background-size: 200% 100%;
     transition: all 0.3s ease;
@@ -162,6 +162,7 @@ main {
     flex-direction: row;
     justify-content: center;
     gap: 30px;
+    margin-bottom: 20px;
 }
 
     .cards .card {
@@ -350,7 +351,7 @@ select.form-control:focus {
     display: inline-block;
     padding: 10px 18px;
     margin-bottom: 25px;
-    background: linear-gradient(135deg, #0000ff, #0399cc, #0000ff);
+    background: linear-gradient(135deg, #0000ff, #000055, #0000ff);
     background-size: 200% 100%;
     color: #fff;
     border-radius: 22px;
@@ -448,7 +449,7 @@ tr:hover {
     border-radius: 23px;
     border: none;
     outline: none;
-    background: linear-gradient(135deg, #0000ff, #0399cc, #0000ff);
+    background: linear-gradient(135deg, #0000ff, #000055, #0000ff);
     background-size: 200% 100%;
     transition: all 0.3s ease;
 }
@@ -456,4 +457,43 @@ tr:hover {
 .btn-lg:hover {
     background-position: 100% 0%;
     transform: scale(1.03);
+}
+
+.btn-enroll {
+    display: inline-block;
+    padding: 10px 15px;
+    background: linear-gradient(135deg, #00aa00, #005500, #00aa00);
+    background-size: 200% 100%;
+    color: #fff;
+    border-radius: 22px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    outline: none;
+    border: none;
+}
+
+.btn-enroll:hover {
+    background-position: 100% 0%;
+    transform: scale(1.03);
+    color: #fff;
+}
+
+#fingerprintId {
+    width: 100%;
+}
+
+#fingerprintIdInput {
+    width: 70%;
+}
+
+#enrollButton {
+    width: 30%;
+}
+
+#fingerprintIdForm {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
 }
