@@ -3,6 +3,7 @@ using AttendanceSystem.Data;
 using AttendanceSystem.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using AttendanceSystem.Services;
 
 namespace AttendanceSystem.Controllers
 {
@@ -17,9 +18,14 @@ namespace AttendanceSystem.Controllers
             _context = context;
             _logger = logger;
         }
+
         [HttpGet]
         public IActionResult Index()
         {
+            // Run Python graph script
+            PythonGraphGenerator.RunScript();
+
+            // Gather dashboard stats
             var studentsCount = _context.Students.Count();
             var professorsCount = _context.Users
                 .Where(user => _context.UserRoles
