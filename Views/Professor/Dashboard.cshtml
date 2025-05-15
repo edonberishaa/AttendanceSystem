@@ -1,4 +1,12 @@
 ﻿@model IEnumerable<Subject>
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<AttendanceSystem.Models.ApplicationUser> UserManager
+
+@{
+    // Fetch the current user
+    var currentUser = await UserManager.GetUserAsync(User);
+    string fullName = currentUser?.FullName ?? "Unknown User";
+}
 
 <head>
     <style>
@@ -105,7 +113,7 @@
         {
             <span>Prof.</span>
         }
-        <strong>@User.Identity.Name</strong>
+        <strong>@fullName</strong>
 	</div>
 }
 
