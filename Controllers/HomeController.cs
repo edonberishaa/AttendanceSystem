@@ -22,10 +22,8 @@ namespace AttendanceSystem.Controllers
         [HttpGet]
         public IActionResult Index()
         {
-            // Run Python graph script
-            //PythonGraphGenerator.RunScript();
+            RunPythonGraphScript();  // Run the Python graph generator
 
-            // Gather dashboard stats
             var studentsCount = _context.Students.Count();
             var professorsCount = _context.Users
                 .Where(user => _context.UserRoles
@@ -51,5 +49,34 @@ namespace AttendanceSystem.Controllers
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
+        private void RunPythonGraphScript()
+        {
+            var psi = new ProcessStartInfo
+            {
+                FileName = "python", // or full python.exe path if needed
+                Arguments = "PythonScripts/generate_graph.py",
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                WorkingDirectory = Directory.GetCurrentDirectory() // important to set working directory
+            };
+
+            using var process = Process.Start(psi);
+            process.WaitForExit();
+
+            string output = process.StandardOutput.ReadToEnd();
+            string errors = process.StandardError.ReadToEnd();
+
+            if (!string.IsNullOrEmpty(errors))
+            {
+                _logger.LogError("Python script error: " + errors);
+            }
+            else
+            {
+                _logger.LogInformation("Python script output: " + output);
+            }
+        }
+
     }
 }
