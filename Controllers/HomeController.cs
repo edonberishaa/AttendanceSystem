@@ -23,7 +23,7 @@ namespace AttendanceSystem.Controllers
         public IActionResult Index()
         {
             // Run Python graph script
-            PythonGraphGenerator.RunScript();
+            //PythonGraphGenerator.RunScript();
 
             // Gather dashboard stats
             var studentsCount = _context.Students.Count();

@@ -111,7 +111,7 @@
     <script>
         const studentForm = document.getElementById("studentForm");
         const statusMessage = document.getElementById("statusMessage");
-        const fingerprintInput = document.getElementById("fingerprintId");
+        const fingerprintInput = document.getElementById("fingerprintIdInput");
 
             const connection = new signalR.HubConnectionBuilder()
         .withUrl("/ArduinoHub") // <-- must match your `MapHub` route

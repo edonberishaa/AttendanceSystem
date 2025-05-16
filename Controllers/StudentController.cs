@@ -43,7 +43,7 @@ namespace AttendanceSystem.Controllers
 
         [Authorize(Roles = "Admin")]
         [HttpPost]
-        public IActionResult AddStudent(string name, int? fingerprintId)
+        public IActionResult AddStudent(string name, int fingerprintId)
         {
             if (string.IsNullOrWhiteSpace(name))
             {
@@ -75,7 +75,7 @@ namespace AttendanceSystem.Controllers
 
         [Authorize(Roles = "Admin")]
         [HttpPost]
-        public IActionResult EditStudent(int id, string name, int? fingerprintId)
+        public IActionResult EditStudent(int id, string name, int fingerprintId)
         {
             var student = _context.Students.FirstOrDefault(s => s.StudentID == id);
             if (student == null)
