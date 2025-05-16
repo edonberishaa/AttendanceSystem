@@ -16,6 +16,7 @@ namespace AttendanceSystem.Data
         public virtual DbSet<Student> Students { get; set; }
         public virtual DbSet<Attendance> Attendances { get; set; }
         public  virtual DbSet<SessionState> SessionStates { get; set; }
+        public DbSet<SubjectRegistration> SubjectRegistrations { get; set; }
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
