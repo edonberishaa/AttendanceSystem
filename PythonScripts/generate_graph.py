@@ -26,7 +26,7 @@ sns.barplot(data=df, x="SubjectId", y="TotalAttendance")
 plt.title("Attendance Count per Subject")
 
 # Step 4: Ensure the path exists
-graph_dir = os.path.join("AttendanceSystem", "wwwroot", "graphs")
+graph_dir = os.path.join("wwwroot", "graphs")
 os.makedirs(graph_dir, exist_ok=True)
 output_path = os.path.join(graph_dir, "graph.png")
 

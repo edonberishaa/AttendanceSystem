@@ -269,8 +269,6 @@ namespace AttendanceSystem.Controllers
         [HttpPost]
         public IActionResult RegisterStudent(int subjectId, int studentId)
         {
-            Console.WriteLine($"subjectId : {subjectId}");
-            Console.WriteLine($"studentid : {studentId}");
 
             var professorEmail = User.Identity.Name;
 
@@ -381,7 +379,7 @@ namespace AttendanceSystem.Controllers
             ViewBag.SubjectId = subjectId;
             return View(students);
         }
-        public IActionResult AttendanceDashboard(int subjectId, DateTime? date = null, int? week = null)
+        public async Task<IActionResult> AttendanceDashboard(int subjectId, DateTime? date = null)
         {
             var professorEmail = User.Identity.Name;
 
@@ -399,6 +397,15 @@ namespace AttendanceSystem.Controllers
             ViewBag.SubjectName = subject.SubjectName;
             ViewBag.SubjectId = subjectId;
 
+            var lessonDates = await _context.Attendances
+                .Where(a => a.SubjectID == subjectId)
+                .Select(a => a.LessonDate.Date)
+                .Distinct()
+                .OrderBy(date => date)
+                .ToListAsync();
+
+            ViewBag.LessonDates = lessonDates;   
+
             var attendanceQuery = _context.Attendances
                 .Where(a => a.SubjectID == subjectId)
                 .Include(a => a.Student)
@@ -408,14 +415,7 @@ namespace AttendanceSystem.Controllers
             {
                 attendanceQuery = attendanceQuery.Where(a => a.LessonDate == date.Value.Date); // Use .Date to compare only the date part
             }
-            else if (week.HasValue)
-            {
-                // Calculate start and end dates for the selected week
-                var startDate = new DateTime(DateTime.Today.Year, 1, 1).AddDays((week.Value - 1) * 7);
-                var endDate = startDate.AddDays(6);
 
-                attendanceQuery = attendanceQuery.Where(a => a.LessonDate >= startDate && a.LessonDate <= endDate);
-            }
             var attendanceRecords = attendanceQuery.ToList();
 
             return View(attendanceRecords);
@@ -433,7 +433,7 @@ namespace AttendanceSystem.Controllers
             return View(subjects);
         }
 
-        public IActionResult ExportAttendanceToExcel(int subjectId, int? week, DateTime? date = null)
+        public IActionResult ExportAttendanceToExcel(int subjectId, DateTime? date = null)
         {
             var professorEmail = User.Identity.Name;
 
@@ -457,15 +457,6 @@ namespace AttendanceSystem.Controllers
             {
                 attendanceRecords = attendanceRecords.Where(a => a.LessonDate == date.Value.Date);
             }
-            else if (week.HasValue)
-            {
-                // Calculate start and end dates for the selected week
-                var startDate = new DateTime(DateTime.Today.Year, 1, 1).AddDays((week.Value - 1) * 7);
-                var endDate = startDate.AddDays(6);
-
-                attendanceRecords = attendanceRecords.Where(a => a.LessonDate >= startDate && a.LessonDate <= endDate);
-            }
-
             var records = attendanceRecords.ToList();
 
             if (!records.Any())

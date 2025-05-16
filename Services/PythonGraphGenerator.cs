@@ -7,7 +7,7 @@ public static class PythonGraphGenerator
         var psi = new ProcessStartInfo
         {
             FileName = "python",
-            Arguments = "generate_attendance_graphs.py",  // or use full path
+            Arguments = "C:\\Users\\Lenovo\\Desktop\\AttendanceSystemProject.v1\\AttendanceSystem\\PythonScripts\\generate_attendance_graphs.py",  // or use full path
             UseShellExecute = false,
             RedirectStandardOutput = true,
             RedirectStandardError = true,
