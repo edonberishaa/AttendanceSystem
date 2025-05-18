@@ -4,81 +4,6 @@
     ViewData["Title"] = "Add Student";
 }
 
-<head>
-    <style>
-    #statusMessage {
-        background: rgba(255, 255, 255, 0.05);
-        padding: 12px 20px;
-        border-radius: 8px;
-        margin-bottom: 25px;
-        font-size: 1rem;
-        color: #fefefe;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-    }
-
-    .student-form {
-        background: rgba(255, 255, 255, 0.05);
-        padding: 30px;
-        border-radius: 12px;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
-        max-width: 500px;
-    }
-
-    .form-group {
-        margin-bottom: 20px;
-    }
-
-    label {
-        display: block;
-        margin-bottom: 6px;
-        font-weight: 500;
-        color: #d1d5db;
-    }
-
-    input[type="text"] {
-        width: 100%;
-        padding: 10px 12px;
-        border-radius: 6px;
-        border: none;
-        background-color: #1f1f1f;
-        color: #f3f3f3;
-        font-size: 1rem;
-    }
-
-    input[type="text"]:focus {
-        outline: 2px solid #3b82f6;
-        background-color: #1a1a1a;
-    }
-
-    
-
-    .btn-submit {
-        background-color: #16a34a;
-        color: #fff;
-        margin-top: 10px;
-    }
-
-    .btn-submit:hover {
-        background-color: #15803d;
-        transform: scale(1.03);
-    }
-
-    #serialConsole {
-        background: #000;
-        color: #00ff00;
-        padding: 15px;
-        font-family: monospace;
-        font-size: 0.95rem;
-        margin-top: 30px;
-        border-radius: 8px;
-        height: 200px;
-        overflow-y: auto;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
-    }
-</style>
-
-</head>
-
 <h2>Add Student</h2>
 
 <div id="statusMessage">🔌 Waiting for Arduino connection...</div>
@@ -126,7 +51,7 @@
                     studentForm.style.display = "block";
                     statusMessage.textContent = "✅ Fingerprint Sensor Connected!";
                 } else {
-                    //studentForm.style.display = "none";
+                    studentForm.style.display = "none";
                     statusMessage.textContent = "🔌 Waiting for Arduino connection...";
                 }
             })

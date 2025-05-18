@@ -3,56 +3,6 @@
 @{
     ViewData["Title"] = "Edit";
 }
-
-<!-- ==== CUSTOM DARK THEME STYLES ==== -->
-<style>
-    .edit-container {
-        max-width: 500px;
-        background: rgba(255, 255, 255, 0.05);
-        padding: 30px;
-        border-radius: 12px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-    }
-
-    .form-group {
-        margin-bottom: 20px;
-    }
-
-    .text-danger {
-        color: #ef4444;
-        font-size: 0.85rem;
-    }
-
-    .btn-submit {
-        background: linear-gradient(135deg, #3b82f6, #2563eb);
-        border: none;
-        color: #fff;
-        padding: 10px 20px;
-        border-radius: 6px;
-        font-weight: 600;
-        transition: background 0.3s ease, transform 0.2s ease;
-        cursor: pointer;
-    }
-
-        .btn-submit:hover {
-            background: linear-gradient(135deg, #1e40af, #1d4ed8);
-            transform: scale(1.02);
-        }
-
-    .link-back {
-        display: inline-block;
-        margin-top: 25px;
-        color: #60a5fa;
-        text-decoration: none;
-        transition: color 0.2s ease;
-    }
-
-        .link-back:hover {
-            color: #93c5fd;
-            text-decoration: underline;
-        }
-</style>
-
 <!-- ==== FORM CONTENT ==== -->
 <h1>Edit Subject</h1>
 <h4>Update course details below</h4>
@@ -64,13 +14,13 @@
         <input type="hidden" asp-for="SubjectID" />
 
         <div class="form-group">
-            <label asp-for="SubjectName" class="control-label"></label>
+            <label asp-for="SubjectName" class="control-label">Subject Name</label>
             <input asp-for="SubjectName" class="form-control" />
             <span asp-validation-for="SubjectName" class="text-danger"></span>
         </div>
 
         <div class="form-group">
-            <label asp-for="ProfessorID" class="control-label"></label>
+            <label asp-for="ProfessorID" class="control-label">Professor Email</label>
             <select asp-for="ProfessorID" class="form-control" asp-items="ViewBag.ProfessorID"></select>
             <span asp-validation-for="ProfessorID" class="text-danger"></span>
         </div>

@@ -4,68 +4,6 @@
     ViewData["Title"] = "Details";
 }
 
-<!-- ==== CUSTOM STYLES FOR DETAILS VIEW ==== -->
-<style>
-    main {
-        padding: 20px;
-    }
-
-    h1 {
-        font-size: 2.5rem;
-        margin-bottom: 15px;
-        color: #f3f4f6;
-    }
-
-    h4 {
-        font-size: 1.3rem;
-        margin-bottom: 20px;
-        font-weight: 500;
-        color: #d1d5db;
-    }
-
-    .details-container {
-        background: rgba(255, 255, 255, 0.05);
-        padding: 30px;
-        border-radius: 12px;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
-        max-width: 600px;
-    }
-
-    .details-pair {
-        margin-bottom: 20px;
-    }
-
-    .details-label {
-        font-weight: 600;
-        color: #9ca3af;
-        margin-bottom: 6px;
-        display: block;
-    }
-
-    .details-value {
-        font-size: 1.1rem;
-        color: #ffffff;
-    }
-
-    .action-links {
-        margin-top: 30px;
-    }
-
-        .action-links a {
-            display: inline-block;
-            margin-right: 20px;
-            text-decoration: none;
-            color: #60a5fa;
-            font-weight: 500;
-            transition: color 0.2s ease;
-        }
-
-            .action-links a:hover {
-                color: #93c5fd;
-                text-decoration: underline;
-            }
-</style>
-
 <!-- ==== VIEW CONTENT ==== -->
 <h1>Subject Details</h1>
 
@@ -74,17 +12,17 @@
     <hr />
 
     <div class="details-pair">
-        <span class="details-label">@Html.DisplayNameFor(model => model.SubjectName)</span>
+        <span class="details-label">Subject Name</span>
         <span class="details-value">@Html.DisplayFor(model => model.SubjectName)</span>
     </div>
 
     <div class="details-pair">
-        <span class="details-label">@Html.DisplayNameFor(model => model.Professor)</span>
+        <span class="details-label">Professor Name</span>
         <span class="details-value">@Html.DisplayFor(model => model.Professor.FullName)</span>
     </div>
 
     <div class="details-pair">
-        <span class="details-label">@Html.DisplayNameFor(model => model.Professor)</span>
+        <span class="details-label">Professor Email</span>
         <span class="details-value">@Html.DisplayFor(model => model.Professor.Email)</span>
     </div>
 
