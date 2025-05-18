@@ -1,42 +1,6 @@
 ﻿@model IEnumerable<AttendanceSystem.Models.ApplicationUser>
 
-<head>
-    <style>
-        main {
-            padding: 20px;
-        }
-
-        h2 {
-            font-size: 2rem;
-            margin-bottom: 25px;
-            color: #f3f4f6;
-        }
-
-        
-
-        .no-data {
-            color: #9ca3af;
-            background: rgba(255, 255, 255, 0.03);
-            padding: 15px;
-            border-radius: 8px;
-            font-style: italic;
-            margin-top: 20px;
-        }
-
-        .alert-success {
-            background-color: #16a34a;
-            color: white;
-            padding: 12px 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            font-weight: 500;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-        }
-
-    </style>
-
-</head>
-<h2>All Professors</h2>
+<h1>All Professors</h1>
 
 @if (Model.Any())
 {
@@ -72,13 +36,11 @@
                             <input type="hidden" name="professorID" value="@professor.Id" />
                             <button type="submit" class="remove-btn" onclick="return confirm('Are you sure you want to remove this professor?');">Remove</button>
                         </form>
-
                     </td>
                 </tr>
             }
         </tbody>
     </table>
-
 }
 else
 {
