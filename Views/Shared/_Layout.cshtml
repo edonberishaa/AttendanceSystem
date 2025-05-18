@@ -42,7 +42,7 @@
                 @if (User.IsInRole("Admin"))
                 {
                     <li class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Professor" || ViewContext.RouteData.Values["Controller"].ToString() == "Account"? "active" : "")">
-                        <a onclick="toggleDropdown(event)"dropdown-toggler">
+                        <a onclick="toggleDropdown(event)" class="dropdown-toggler">
                             <div class="list-logo">
                                 <i class="fa-solid fa-user-tie"></i>
                             </div>
@@ -102,6 +102,17 @@
                         </a>
 			    </li>
                 }
+                <li class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Insights" ? "active" : "")">
+                    <a asp-controller="Insights" asp-action="Index">
+                        <div class="list-logo">
+                            <i class="fa-solid fa-chart-line"></i>
+                        </div>
+                        Insights
+                    </a>
+                </li>
+                
+        
+
             </ul>
 
         </div>
