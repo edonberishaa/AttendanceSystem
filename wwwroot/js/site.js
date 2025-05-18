@@ -46,22 +46,28 @@ function checkArduinoStatus() {
 checkArduinoStatus();
 setInterval(checkArduinoStatus, 5000); // every 5 seconds
 
-const checkbox = document.getElementById("theme-toggle");
-
 window.addEventListener("DOMContentLoaded", () => {
-  const theme = localStorage.getItem("theme");
-  if (theme === "dark") {
-    document.body.classList.add("dark-mode");
-    checkbox.checked = true;
-  }
+    const checkbox = document.getElementById("theme-toggle");
+    const theme = localStorage.getItem("theme");
+
+    if (theme === "light") {
+        document.documentElement.classList.remove("dark-mode");
+        if (checkbox) checkbox.checked = false;
+    } else {
+        document.documentElement.classList.add("dark-mode");
+        if (checkbox) checkbox.checked = true;
+    }
 });
 
-checkbox.addEventListener("change", () => {
-  if (checkbox.checked) {
-    document.body.classList.add("dark-mode");
-    localStorage.setItem("theme", "dark");
-  } else {
-    document.body.classList.remove("dark-mode");
-    localStorage.setItem("theme", "light");
-  }
-});
+const checkbox = document.getElementById("theme-toggle");
+if (checkbox) {
+    checkbox.addEventListener("change", () => {
+        if (checkbox.checked) {
+            document.documentElement.classList.add("dark-mode");
+            localStorage.setItem("theme", "dark");
+        } else {
+            document.documentElement.classList.remove("dark-mode");
+            localStorage.setItem("theme", "light");
+        }
+    });
+}
