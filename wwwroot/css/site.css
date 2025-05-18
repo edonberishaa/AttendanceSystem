@@ -1,5 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&family=Noto+Sans:ital,wght@0,100..900;1,100..900&display=swap');
 
 /* Light mode variables */
 :root {
@@ -45,8 +46,8 @@
     --ball-color: #fff;
 }
 
-/* Dark mode overrides */
-body.dark-mode {
+/* Dark mode overrides - now target html.dark-mode for instant theme switching */
+html.dark-mode {
     --bg-main: #121212;
     --bg-secondary: #1e1e1e;
     --bg-navigation: #1e1e1e88;
@@ -109,11 +110,12 @@ body {
     background-repeat: no-repeat;
     color: var(--text-main);
     backdrop-filter: blur(4px);
+    font-family: 'Noto Sans', 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', sans-serif;
 }
 
-    body.dark-mode {
-        background-image: url(../img/bg-img-dark.webp);
-    }
+html.dark-mode body {
+    background-image: url(../img/bg-img-dark.webp);
+}
 
 .toggle-wrapper {
     position: absolute;
@@ -129,14 +131,14 @@ body {
     border-radius: 50px;
     align-items: center;
     justify-content: space-between;
-    padding: 0 3.5px 1px;
+    padding: 0 3.5px 0.5px;
     cursor: pointer;
     position: relative;
     transition: background-color 0.3s ease;
     margin: 0 !important;
 }
 
-body.dark-mode .toggle {
+html.dark-mode .toggle {
     background-color: var(--toggle-dark-bg);
 }
 
