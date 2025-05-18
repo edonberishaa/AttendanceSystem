@@ -42,7 +42,7 @@
                 @if (User.IsInRole("Admin"))
                 {
                     <li class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Professor" || ViewContext.RouteData.Values["Controller"].ToString() == "Account"? "active" : "")">
-                        <a onclick="toggleDropdown(event)"dropdown-toggler">
+                        <a onclick="toggleDropdown(event)" class="dropdown-toggler">
                             <div class="list-logo">
                                 <i class="fa-solid fa-user-tie"></i>
                             </div>
@@ -104,6 +104,14 @@
                 }
             </ul>
 
+        </div>
+        <div class="toggle-wrapper">
+            <input type="checkbox" id="theme-toggle" />
+            <label for="theme-toggle" class="toggle">
+                <span class="icon">🌞</span>
+                <span class="icon">🌙</span>
+                <span class="ball"></span>
+            </label>
         </div>
     </div>
     <div class="content">
