@@ -131,7 +131,7 @@ html.dark-mode body {
     border-radius: 50px;
     align-items: center;
     justify-content: space-between;
-    padding: 0 3.5px 0.5px;
+    padding: 0.5px 4px 0;
     cursor: pointer;
     position: relative;
     transition: background-color 0.3s ease;
@@ -155,7 +155,7 @@ html.dark-mode .toggle {
     height: 26px;
     position: absolute;
     top: 2px;
-    left: 1.5px;
+    left: 2px;
     transition: transform 0.4s ease;
     box-shadow: 0 2px 5px rgba(0,0,0,0.2);
 }
