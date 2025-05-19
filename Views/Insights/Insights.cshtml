@@ -1,74 +1,161 @@
-﻿@model List<AttendanceSystem.Models.Subject> 
+﻿@model List<AttendanceSystem.Models.Subject>
 @{
     ViewData["Title"] = "Insights";
 }
 
-<h2 style="color:white;">Attendance Insights</h2>
+<h2 class="insights-title">Attendance Insights</h2>
 
-<div style="display: flex; gap: 20px; align-items: flex-start; justify-content: center;">
-    <div style="flex: 1; max-width: 500px;">
-        <h3 style="color:white;">Attendance Status per Subject</h3>
+<div class="insights-charts-container">
+    <div class="insights-chart-box">
+        <h3 class="insights-subtitle">Attendance Status per Subject</h3>
         <canvas id="attendanceStatusChart" style="max-width: 100%; height: auto;"></canvas>
     </div>
-    <div style="flex: 1; max-width: 500px;">
-        <h4 style="color:white;">Total Attendance per Subject</h4>
+    <div class="insights-chart-box">
+        <h4 class="insights-subsubtitle">Total Attendance per Subject</h4>
         <canvas id="totalAttendanceChart" style="max-width: 100%; height: auto;"></canvas>
     </div>
 </div>
 
+<style>
+    .insights-title {
+        font-size: 2.2rem;
+        margin-bottom: 15px;
+        color: var(--text-secondary) !important;
+        font-weight: 600;
+    }
+
+    .insights-charts-container {
+        display: flex;
+        gap: 20px;
+        align-items: flex-start;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .insights-chart-box {
+        flex: 1;
+        max-width: 500px;
+        background: var(--bg-table);
+        border-radius: 12px;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+        padding: 24px 18px 18px 18px;
+        margin-bottom: 20px;
+    }
+
+    .insights-subtitle {
+        color: var(--text-secondary) !important;
+        font-size: 1.3rem;
+        margin-bottom: 18px;
+        font-weight: 500;
+    }
+
+    .insights-subsubtitle {
+        color: var(--text-label) !important;
+        font-size: 1.1rem;
+        margin-bottom: 18px;
+        font-weight: 500;
+    }
+
+    html.dark-mode .insights-chart-box {
+        background: var(--bg-table);
+        box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+    }
+</style>
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
+    // Utility to get CSS variable value
+    function getCssVar(name) {
+        return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    }
+
+    function getChartColors() {
+        const isDark = document.documentElement.classList.contains('dark-mode');
+        return {
+            present: isDark ? getCssVar('--bg-btn-blue') || 'rgba(0,153,255,0.7)' : 'rgba(0,153,255,0.7)',
+            absent: isDark ? 'rgba(255,77,77,0.7)' : 'rgba(255,77,77,0.7)',
+            total: isDark ? 'rgba(102,255,204,0.7)' : 'rgba(0,153,255,0.7)',
+            axis: getCssVar('--text-main') || '#000',
+            grid: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.07)'
+        };
+    }
+
+    let attendanceStatusChartInstance = null;
+    let totalAttendanceChartInstance = null;
+    let lastData = null;
+
+    function renderCharts(data) {
+        lastData = data; // Save for theme switching
+
+        const colors = getChartColors();
+        const labels = data.map(d => "Subject " + d.subjectId);
+        const present = data.map(d => d.presentCount);
+        const absent = data.map(d => d.absentCount);
+
+        // Destroy previous charts if they exist
+        if (attendanceStatusChartInstance) {
+            attendanceStatusChartInstance.destroy();
+        }
+        if (totalAttendanceChartInstance) {
+            totalAttendanceChartInstance.destroy();
+        }
+
+        attendanceStatusChartInstance = new Chart(document.getElementById('attendanceStatusChart'), {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    { label: 'Present', data: present, backgroundColor: colors.present },
+                    { label: 'Absent', data: absent, backgroundColor: colors.absent }
+                ]
+            },
+            options: {
+                plugins: {
+                    legend: { labels: { color: colors.axis } },
+                    title: { display: false }
+                },
+                scales: {
+                    x: { ticks: { color: colors.axis }, grid: { color: colors.grid } },
+                    y: { ticks: { color: colors.axis }, grid: { color: colors.grid } }
+                }
+            }
+        });
+
+        const totals = data.map(d => d.presentCount + d.absentCount);
+        totalAttendanceChartInstance = new Chart(document.getElementById('totalAttendanceChart'), {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Total Attendance',
+                    data: totals,
+                    backgroundColor: colors.total
+                }]
+            },
+            options: {
+                plugins: {
+                    legend: { labels: { color: colors.axis } },
+                    title: { display: false }
+                },
+                scales: {
+                    x: { ticks: { color: colors.axis }, grid: { color: colors.grid } },
+                    y: { ticks: { color: colors.axis }, grid: { color: colors.grid } }
+                }
+            }
+        });
+    }
+
     document.addEventListener("DOMContentLoaded", function () {
         fetch("/Insights/GetAttendanceData")
             .then(res => res.json())
-            .then(data => {
-                const labels = data.map(d => "Subject " + d.subjectId);
-                const present = data.map(d => d.presentCount);
-                const absent = data.map(d => d.absentCount);
+            .then(renderCharts);
 
-                new Chart(document.getElementById('attendanceStatusChart'), {
-                    type: 'bar',
-                    data: {
-                        labels: labels,
-                        datasets: [
-                            { label: 'Present', data: present, backgroundColor: 'rgba(0, 153, 255, 0.7)' },
-                            { label: 'Absent', data: absent, backgroundColor: 'rgba(255, 77, 77, 0.7)' }
-                        ]
-                    },
-                    options: {
-                        plugins: {
-                            legend: { labels: { color: '#fff' } },
-                            title: { display: false }
-                        },
-                        scales: {
-                            x: { ticks: { color: '#fff' }, grid: { color: 'rgba(255,255,255,0.1)' } },
-                            y: { ticks: { color: '#fff' }, grid: { color: 'rgba(255,255,255,0.1)' } }
-                        }
-                    }
-                });
-
-                const totals = data.map(d => d.presentCount + d.absentCount);
-                new Chart(document.getElementById('totalAttendanceChart'), {
-                    type: 'bar',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            label: 'Total Attendance',
-                            data: totals,
-                            backgroundColor: 'rgba(102, 255, 204, 0.7)'
-                        }]
-                    },
-                    options: {
-                        plugins: {
-                            legend: { labels: { color: '#fff' } },
-                            title: { display: false }
-                        },
-                        scales: {
-                            x: { ticks: { color: '#fff' }, grid: { color: 'rgba(255,255,255,0.1)' } },
-                            y: { ticks: { color: '#fff' }, grid: { color: 'rgba(255,255,255,0.1)' } }
-                        }
-                    }
-                });
-            });
+        // Re-render charts on theme change, using lastData
+        const observer = new MutationObserver(() => {
+            if (lastData) {
+                renderCharts(lastData);
+            }
+        });
+        observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
     });
 </script>
