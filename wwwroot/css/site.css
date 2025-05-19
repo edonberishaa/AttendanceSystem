@@ -110,7 +110,7 @@ body {
     background-repeat: no-repeat;
     color: var(--text-main);
     backdrop-filter: blur(4px);
-    font-family: 'Noto Sans', 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', sans-serif;
+    font-family: 'Poppins', 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', sans-serif;
 }
 
 html.dark-mode body {
