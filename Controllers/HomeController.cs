@@ -22,10 +22,6 @@ namespace AttendanceSystem.Controllers
         [HttpGet]
         public IActionResult Index()
         {
-            // Run Python graph script
-            //PythonGraphGenerator.RunScript();
-
-            // Gather dashboard stats
             var studentsCount = _context.Students.Count();
             var professorsCount = _context.Users
                 .Where(user => _context.UserRoles
@@ -51,5 +47,6 @@ namespace AttendanceSystem.Controllers
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
+
     }
 }
