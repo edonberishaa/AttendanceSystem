@@ -1,32 +1,165 @@
-﻿@model List<AttendanceSystem.Models.Subject> 
+﻿@model List<AttendanceSystem.Models.Subject>
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<ApplicationUser> UserManager
+
 @{
     ViewData["Title"] = "Insights";
 }
 
-<h2 style="color:white;">Attendance Insights</h2>
+<div class="container" style="color: white;">
+    <h2>Attendance Insights</h2>
 
-<div style="display: flex; gap: 20px; align-items: flex-start; justify-content: center;">
-    <div style="flex: 1; max-width: 500px;">
-        <h3 style="color:white;">Attendance Status per Subject</h3>
-        <canvas id="attendanceStatusChart" style="max-width: 100%; height: auto;"></canvas>
+    <!-- Filter Section -->
+    <div class="filter-section" style="margin-bottom: 20px;">
+        @if (User.IsInRole("Admin"))
+        {
+            <div style="margin-bottom: 10px;">
+                <label>Professor:</label>
+                <select id="professorFilter" style="width: 300px; margin-left: 10px;"></select>
+            </div>
+        }
+
+        <div style="margin-bottom: 10px;">
+            <label>Subjects:</label>
+            <select id="subjectFilter" multiple="multiple" style="width: 300px;">
+                @if (!User.IsInRole("Admin"))
+                {
+                    @foreach (var subject in Model)
+                    {
+                        <option value="@subject.SubjectID">@subject.SubjectName</option>
+                    }
+                }
+            </select>
+        </div>
+
+        <div style="margin-bottom: 10px;">
+            <label>Select Date:</label>
+            <select id="dateFilter" style="width: 200px; margin-left: 10px;">
+                <option value="">-- Select Date --</option>
+            </select>
+
+            <button id="applyBtn" onclick="refreshCharts()" class="btn btn-primary" style="margin-left: 10px;" disabled>Apply</button>
+        </div>
     </div>
-    <div style="flex: 1; max-width: 500px;">
-        <h4 style="color:white;">Total Attendance per Subject</h4>
-        <canvas id="totalAttendanceChart" style="max-width: 100%; height: auto;"></canvas>
+
+    <!-- Charts -->
+    <div class="row">
+        <div class="col-md-6">
+            <h4>Attendance Status per Subject</h4>
+            <canvas id="attendanceStatusChart"></canvas>
+        </div>
+        <div class="col-md-6">
+            <h4>Total Attendance per Subject</h4>
+            <canvas id="totalAttendanceChart"></canvas>
+        </div>
     </div>
 </div>
 
+<!-- Scripts -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
 <script>
-    document.addEventListener("DOMContentLoaded", function () {
-        fetch("/Insights/GetAttendanceData")
+    let attendanceChart = null;
+    let totalChart = null;
+
+    $(document).ready(function () {
+        $('#subjectFilter, #dateFilter, #professorFilter').select2();
+
+        if (@User.IsInRole("Admin").ToString().ToLower()) {
+             fetch('@Url.Action("GetProfessors", "Insights")')
+                .then(res => res.json())
+                .then(professors => {
+                    $('#professorFilter').append(new Option('-- All Professors --', ''));
+                    professors.forEach(p => {
+                        $('#professorFilter').append(new Option(p.name, p.id));
+                    });
+                    $('#professorFilter').trigger('change');
+                    loadSubjects(null);
+                })
+                .catch(error => console.error('Error loading professors:', error));
+
+            $('#professorFilter').on('change', function () {
+                loadSubjects($(this).val());
+            });
+        } else {
+            loadSubjects('@UserManager.GetUserId(User)');
+        }
+
+        $('#subjectFilter').on('change', loadAvailableDates);
+    });
+
+    function loadSubjects(professorId) {
+        let url = '/Insights/GetSubjects';
+        if (professorId) url += `?professorId=${professorId}`;
+
+        $('#applyBtn').prop('disabled', true);
+
+        fetch(url)
             .then(res => res.json())
-            .then(data => {
-                const labels = data.map(d => "Subject " + d.subjectId);
+            .then(subjects => {
+                $('#subjectFilter').empty();
+                subjects.forEach(s => {
+                    $('#subjectFilter').append(new Option(s.name, s.subjectID));
+                });
+                $('#subjectFilter').trigger('change');
+                loadAvailableDates().then(() => {
+                    $('#applyBtn').prop('disabled', false);
+                });
+            })
+            .catch(error => {
+                console.error('Error loading subjects:', error);
+                $('#applyBtn').prop('disabled', false);
+            });
+    }
+
+    async function loadAvailableDates() {
+        const subjectIds = $('#subjectFilter').val() || [];
+        if (subjectIds.length === 0) return;
+
+        try {
+            const dates = await fetch(`/Insights/GetAvailableDates?subjectIds=${subjectIds.join(',')}`)
+                .then(res => res.json());
+
+            const dateFilter = $('#dateFilter');
+            dateFilter.empty().append('<option value="">-- Select Date --</option>');
+
+            dates.forEach(date => {
+                const dateString = new Date(date).toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                });
+                dateFilter.append(`<option value="${date}">${dateString}</option>`);
+            });
+
+            $('#dateFilter').trigger('change');
+        } catch (error) {
+            console.error('Error loading dates:', error);
+        }
+    }
+
+    async function refreshCharts() {
+        const subjectIds = $('#subjectFilter').val() || [];
+        const selectedDate = $('#dateFilter').val();
+
+        try {
+            const data = await fetch(`/Insights/GetAttendanceData?subjectIds=${subjectIds.join(',')}&date=${selectedDate}`)
+                .then(res => res.json());
+
+            if (attendanceChart) attendanceChart.destroy();
+            if (totalChart) totalChart.destroy();
+
+            if (data.length > 0) {
+                const labels = data.map(d => d.subjectName || `Subject ${d.subjectId}`);
                 const present = data.map(d => d.presentCount);
                 const absent = data.map(d => d.absentCount);
+                const totals = data.map(d => d.presentCount + d.absentCount);
 
-                new Chart(document.getElementById('attendanceStatusChart'), {
+                attendanceChart = new Chart(document.getElementById('attendanceStatusChart'), {
                     type: 'bar',
                     data: {
                         labels: labels,
@@ -36,9 +169,9 @@
                         ]
                     },
                     options: {
+                        responsive: true,
                         plugins: {
-                            legend: { labels: { color: '#fff' } },
-                            title: { display: false }
+                            legend: { labels: { color: '#fff' } }
                         },
                         scales: {
                             x: { ticks: { color: '#fff' }, grid: { color: 'rgba(255,255,255,0.1)' } },
@@ -47,8 +180,7 @@
                     }
                 });
 
-                const totals = data.map(d => d.presentCount + d.absentCount);
-                new Chart(document.getElementById('totalAttendanceChart'), {
+                totalChart = new Chart(document.getElementById('totalAttendanceChart'), {
                     type: 'bar',
                     data: {
                         labels: labels,
@@ -59,9 +191,9 @@
                         }]
                     },
                     options: {
+                        responsive: true,
                         plugins: {
-                            legend: { labels: { color: '#fff' } },
-                            title: { display: false }
+                            legend: { labels: { color: '#fff' } }
                         },
                         scales: {
                             x: { ticks: { color: '#fff' }, grid: { color: 'rgba(255,255,255,0.1)' } },
@@ -69,6 +201,12 @@
                         }
                     }
                 });
-            });
-    });
+            } else {
+                $('#attendanceStatusChart').replaceWith('<p style="color: white">No data for selected filters</p>');
+                $('#totalAttendanceChart').replaceWith('<p style="color: white">No data for selected filters</p>');
+            }
+        } catch (error) {
+            console.error('Error refreshing charts:', error);
+        }
+    }
 </script>
