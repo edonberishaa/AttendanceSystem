@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using AttendanceSystem.Models;
+using Microsoft.AspNetCore.Identity;
 
 namespace AttendanceSystem.Models
 {
