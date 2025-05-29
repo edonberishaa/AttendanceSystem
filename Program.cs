@@ -40,7 +40,7 @@ builder.Services.ConfigureApplicationCookie(options =>
 
 // Add services to the container
 builder.Services.AddControllersWithViews();
-
+//Add API
 builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
