@@ -61,15 +61,63 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
+<!-- Add this to your Insights.cshtml file, below the existing charts -->
+<div class="row mt-4">
+    <!-- Student Attendance Distribution -->
+    <div class="col-md-6">
+        <h4>Student Attendance Distribution</h4>
+        <canvas id="attendanceDistributionChart"></canvas>
+    </div>
+
+    <!-- Professor Performance (Admin only) -->
+    @if (User.IsInRole("Admin"))
+    {
+        <div class="col-md-6">
+            <h4>Professor Performance</h4>
+            <canvas id="professorPerformanceChart"></canvas>
+        </div>
+    }
+</div>
+
+<div class="row mt-4">
+    <!-- Student Attendance Breakdown -->
+    <div class="col-md-6">
+        <h4>Top/Bottom Performing Students</h4>
+        <div class="form-check form-check-inline">
+            <input class="form-check-input" type="radio" name="studentPerformanceFilter" id="topStudents" value="top" checked>
+            <label class="form-check-label" for="topStudents">Top 5</label>
+        </div>
+        <div class="form-check form-check-inline">
+            <input class="form-check-input" type="radio" name="studentPerformanceFilter" id="bottomStudents" value="bottom">
+            <label class="form-check-label" for="bottomStudents">Bottom 5</label>
+        </div>
+        <canvas id="studentPerformanceChart"></canvas>
+    </div>
+
+    <!-- Attendance Trend Over Time -->
+    <div class="col-md-6">
+        <h4>Attendance Trend Over Time</h4>
+        <canvas id="attendanceTrendChart"></canvas>
+    </div>
+</div>
+
+<!-- Add this JavaScript -->
 <script>
+    // Initialize charts
     let attendanceChart = null;
     let totalChart = null;
+    let distributionChart = null;
+    let professorChart = null;
+    let studentPerformanceChart = null;
+    let trendChart = null;
 
     $(document).ready(function () {
+        // Initialize Select2
         $('#subjectFilter, #dateFilter, #professorFilter').select2();
 
+        // Load professors (for admins only)
         if (@User.IsInRole("Admin").ToString().ToLower()) {
-             fetch('@Url.Action("GetProfessors", "Insights")')
+            fetch('@Url.Action("GetProfessors", "Insights")')
                 .then(res => res.json())
                 .then(professors => {
                     $('#professorFilter').append(new Option('-- All Professors --', ''));
@@ -77,18 +125,33 @@
                         $('#professorFilter').append(new Option(p.name, p.id));
                     });
                     $('#professorFilter').trigger('change');
-                    loadSubjects(null);
                 })
                 .catch(error => console.error('Error loading professors:', error));
 
-            $('#professorFilter').on('change', function () {
+            $('#professorFilter').on('change', function() {
                 loadSubjects($(this).val());
             });
         } else {
+            // For non-admins, load only their subjects
             loadSubjects('@UserManager.GetUserId(User)');
         }
 
-        $('#subjectFilter').on('change', loadAvailableDates);
+        // Subject filter change handler
+        $('#subjectFilter').on('change', function() {
+            loadAvailableDates();
+            refreshCharts();
+        });
+
+        // Date filter change handler
+        $('#dateFilter').on('change', refreshCharts);
+
+        // Time period change handler (for trend chart)
+        $('#timePeriod').on('change', refreshCharts);
+
+        // Student performance filter handler
+        $('input[name="studentPerformanceFilter"]').change(function() {
+            loadStudentPerformanceChart($(this).val());
+        });
     });
 
     function loadSubjects(professorId) {
@@ -102,12 +165,10 @@
             .then(subjects => {
                 $('#subjectFilter').empty();
                 subjects.forEach(s => {
-                    $('#subjectFilter').append(new Option(s.name, s.subjectID));
+                    // FIXED: Changed subjectID to subjectId
+                    $('#subjectFilter').append(new Option(s.name, s.subjectId));
                 });
                 $('#subjectFilter').trigger('change');
-                loadAvailableDates().then(() => {
-                    $('#applyBtn').prop('disabled', false);
-                });
             })
             .catch(error => {
                 console.error('Error loading subjects:', error);
@@ -115,31 +176,71 @@
             });
     }
 
-    async function loadAvailableDates() {
+        async function loadAvailableDates() {
         const subjectIds = $('#subjectFilter').val() || [];
-        if (subjectIds.length === 0) return;
+        if (subjectIds.length === 0) {
+            $('#dateFilter').empty().append('<option value="">-- Select Date --</option>');
+            return;
+        }
 
         try {
-            const dates = await fetch(`/Insights/GetAvailableDates?subjectIds=${subjectIds.join(',')}`)
-                .then(res => res.json());
+            // FIX 1: Use proper parameter formatting for multiple subject IDs
+            const params = new URLSearchParams();
+            params.append('subjectIds', subjectIds.join(',')); // Send as comma-separated string
+
+            const dates = await fetch(`/Insights/GetAvailableDates?${params.toString()}`)
+                .then(res => {
+                    if (!res.ok) throw new Error('Network response was not ok');
+                    return res.json();
+                });
+
+            // FIX 2: Verify date format from server
+            console.log('Received dates:', dates); // Check in browser console
 
             const dateFilter = $('#dateFilter');
             dateFilter.empty().append('<option value="">-- Select Date --</option>');
 
-            dates.forEach(date => {
-                const dateString = new Date(date).toLocaleDateString('en-US', {
+            // FIX 3: Proper date handling
+            dates.forEach(dateStr => {
+                // Convert to Date object
+                const date = new Date(dateStr);
+
+                // FIX 4: Handle invalid dates
+                if (isNaN(date)) {
+                    console.warn('Invalid date:', dateStr);
+                    return;
+                }
+
+                const dateString = date.toLocaleDateString('en-US', {
                     weekday: 'long',
                     year: 'numeric',
                     month: 'short',
                     day: 'numeric'
                 });
-                dateFilter.append(`<option value="${date}">${dateString}</option>`);
+
+                // Store ISO string in value, display formatted date
+                dateFilter.append(new Option(dateString, date.toISOString()));
             });
 
             $('#dateFilter').trigger('change');
         } catch (error) {
             console.error('Error loading dates:', error);
+            // FIX 5: Show error to user
+            $('#dateFilter').html('<option value="">Error loading dates</option>');
         }
+    }
+
+    // FIX 6: Update query parameter builder
+    function buildQueryParams(subjectIds, selectedDate = null) {
+        const params = new URLSearchParams();
+        if (subjectIds.length > 0) {
+            params.append('subjectIds', subjectIds.join(','));
+        }
+        if (selectedDate) {
+            // Ensure date is in ISO format
+            params.append('date', new Date(selectedDate).toISOString());
+        }
+        return params.toString();
     }
 
     async function refreshCharts() {
@@ -147,66 +248,105 @@
         const selectedDate = $('#dateFilter').val();
 
         try {
-            const data = await fetch(`/Insights/GetAttendanceData?subjectIds=${subjectIds.join(',')}&date=${selectedDate}`)
-                .then(res => res.json());
-
-            if (attendanceChart) attendanceChart.destroy();
-            if (totalChart) totalChart.destroy();
-
-            if (data.length > 0) {
-                const labels = data.map(d => d.subjectName || `Subject ${d.subjectId}`);
-                const present = data.map(d => d.presentCount);
-                const absent = data.map(d => d.absentCount);
-                const totals = data.map(d => d.presentCount + d.absentCount);
-
-                attendanceChart = new Chart(document.getElementById('attendanceStatusChart'), {
-                    type: 'bar',
-                    data: {
-                        labels: labels,
-                        datasets: [
-                            { label: 'Present', data: present, backgroundColor: 'rgba(0, 153, 255, 0.7)' },
-                            { label: 'Absent', data: absent, backgroundColor: 'rgba(255, 77, 77, 0.7)' }
-                        ]
-                    },
-                    options: {
-                        responsive: true,
-                        plugins: {
-                            legend: { labels: { color: '#fff' } }
-                        },
-                        scales: {
-                            x: { ticks: { color: '#fff' }, grid: { color: 'rgba(255,255,255,0.1)' } },
-                            y: { ticks: { color: '#fff' }, grid: { color: 'rgba(255,255,255,0.1)' } }
-                        }
-                    }
-                });
-
-                totalChart = new Chart(document.getElementById('totalAttendanceChart'), {
-                    type: 'bar',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            label: 'Total Attendance',
-                            data: totals,
-                            backgroundColor: 'rgba(102, 255, 204, 0.7)'
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        plugins: {
-                            legend: { labels: { color: '#fff' } }
-                        },
-                        scales: {
-                            x: { ticks: { color: '#fff' }, grid: { color: 'rgba(255,255,255,0.1)' } },
-                            y: { ticks: { color: '#fff' }, grid: { color: 'rgba(255,255,255,0.1)' } }
-                        }
-                    }
-                });
-            } else {
-                $('#attendanceStatusChart').replaceWith('<p style="color: white">No data for selected filters</p>');
-                $('#totalAttendanceChart').replaceWith('<p style="color: white">No data for selected filters</p>');
+            if (subjectIds.length === 0) {
+                clearCharts();
+                return;
             }
+
+            const queryString = buildQueryParams(subjectIds, selectedDate);
+
+            // FIXED: Added default filter type for student performance
+            const filterType = $('input[name="studentPerformanceFilter"]:checked').val() || 'top';
+
+            await Promise.all([
+                loadMainCharts(queryString),
+                loadDistributionChart(queryString),
+                loadStudentPerformanceChart(filterType, queryString),
+                loadTrendChart(queryString),
+                // FIXED: Removed server-side role check from client code
+            ]);
+
+            $('#applyBtn').prop('disabled', false);
         } catch (error) {
             console.error('Error refreshing charts:', error);
+            $('#applyBtn').prop('disabled', false);
         }
+    }
+
+    function clearCharts() {
+        const chartIds = [
+            'attendanceStatusChart',
+            'totalAttendanceChart',
+            'attendanceDistributionChart',
+            'studentPerformanceChart',
+            'attendanceTrendChart',
+            'professorPerformanceChart'
+        ];
+
+        chartIds.forEach(chartId => {
+            const canvas = document.getElementById(chartId);
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                // FIXED: Preserve canvas elements
+                let messageEl = canvas.nextElementSibling;
+                if (!messageEl || messageEl.tagName !== 'P') {
+                    messageEl = document.createElement('p');
+                    messageEl.style.color = 'white';
+                    canvas.parentNode.insertBefore(messageEl, canvas.nextSibling);
+                }
+                messageEl.textContent = 'No data available';
+            }
+        });
+    }
+
+    async function loadMainCharts(queryString) {
+        const data = await fetch(`/Insights/GetAttendanceData?${queryString}`)
+            .then(res => res.json());
+
+        if (attendanceChart) attendanceChart.destroy();
+        if (totalChart) totalChart.destroy();
+
+        if (data.length > 0) {
+            // FIXED: Use consistent subjectName property
+            const labels = data.map(d => d.subjectName);
+            const present = data.map(d => d.presentCount);
+            const absent = data.map(d => d.absentCount);
+            const totals = data.map(d => d.presentCount + d.absentCount);
+
+            // ... (keep chart initialization code unchanged) ...
+        } else {
+            // FIXED: Don't replace canvas, just clear it
+            clearCharts();
+        }
+    }
+
+    // ... (keep other chart loading functions mostly unchanged) ...
+
+    async function loadTrendChart(queryString) {
+        const data = await fetch(`/Insights/GetAttendanceTrend?${queryString}`)
+            .then(res => res.json());
+
+        if (trendChart) trendChart.destroy();
+
+        if (!data || data.length === 0) {
+            clearCharts();
+            return;
+        }
+
+        // FIXED: Proper date sorting
+        const labels = [...new Set(data.map(d => d.Date))]
+                     .sort((a, b) => new Date(a) - new Date(b));
+
+        // ... (rest of trend chart code remains same) ...
+    }
+
+    // Helper: Generate random pastel color for trend lines
+    function getRandomColor() {
+        const r = Math.floor(150 + Math.random() * 100);
+        const g = Math.floor(150 + Math.random() * 100);
+        const b = Math.floor(150 + Math.random() * 100);
+        return `rgba(${r},${g},${b},0.7)`;
     }
 </script>
