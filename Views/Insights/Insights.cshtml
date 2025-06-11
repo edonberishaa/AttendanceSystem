@@ -1,352 +1,570 @@
-﻿@model List<AttendanceSystem.Models.Subject>
-@using Microsoft.AspNetCore.Identity
-@inject UserManager<ApplicationUser> UserManager
-
-@{
-    ViewData["Title"] = "Insights";
+﻿@{
+    ViewData["Title"] = "Attendance Insights";
+    var subjects = ViewBag.Subjects as List<AttendanceSystem.Models.Subject>;
+    var dates = ViewBag.Dates as List<DateTime>;
 }
 
-<div class="container" style="color: white;">
-    <h2>Attendance Insights</h2>
+<style>
+    #attendanceStatusChart,
+    #totalAttendanceChart,
+    #averageAttendanceChart,
+    #attendanceTrendChart,
+    #studentAttendanceChart,
+    #attendanceDistributionChart {
+        background-color: #121f3e;
+        border-radius: 8px;
+    }
 
-    <!-- Filter Section -->
-    <div class="filter-section" style="margin-bottom: 20px;">
-        @if (User.IsInRole("Admin"))
-        {
-            <div style="margin-bottom: 10px;">
-                <label>Professor:</label>
-                <select id="professorFilter" style="width: 300px; margin-left: 10px;"></select>
-            </div>
+    .card {
+        background-color: #1e2a4a;
+        border: none;
+        color: white;
+    }
+
+    label.form-label {
+        color: white;
+    }
+
+
+    /* Dark style for select dropdowns */
+    select.form-select {
+        background-color: #121f3e; /* dark blue background */
+        color: white; /* white text */
+        border: 1px solid #2c3e70; /* optional: subtle border */
+    }
+
+        /* When the dropdown is focused (clicked/active) */
+        select.form-select:focus {
+            background-color: #1e2a4a; /* slightly lighter dark */
+            color: white;
+            outline: none;
+            border-color: #4a90e2; /* highlight border */
         }
 
-        <div style="margin-bottom: 10px;">
-            <label>Subjects:</label>
-            <select id="subjectFilter" multiple="multiple" style="width: 300px;">
-                @if (!User.IsInRole("Admin"))
+        /* Optional: style the options inside the dropdown */
+        select.form-select option {
+            background-color: #121f3e;
+            color: white;
+        }
+</style>
+
+<h2 class="welcome-message">Attendance Insights</h2>
+
+<div class="card">
+    <div class="card-header">
+        Filters
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label for="subjectFilter" class="form-label">Select Subject:</label>
+                @if (User.IsInRole("Admin"))
                 {
-                    @foreach (var subject in Model)
+                    <select id="subjectFilter" multiple class="form-select">
+                        @foreach (var subject in subjects)
+                        {
+                            <option value="@subject.SubjectID">@subject.SubjectName</option>
+                        }
+                    </select>
+                }
+                else
+                {
+                    <select id="subjectFilter" class="form-select">
+                        @foreach (var subject in subjects)
+                        {
+                            <option value="@subject.SubjectID">@subject.SubjectName</option>
+                        }
+                    </select>
+                }
+            </div>
+            <div class="col-md-6">
+                <label for="dateFilter" class="form-label">Select Date:</label>
+                <select id="dateFilter" class="form-select">
+                    <option value="">All Dates</option>
+                    @foreach (var date in dates)
                     {
-                        <option value="@subject.SubjectID">@subject.SubjectName</option>
+                        <option value="@date.ToString("yyyy-MM-dd")">@date.ToString("yyyy-MM-dd")</option>
+                    }
+                </select>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-header">Attendance Status per Subject</div>
+    <div class="card-body">
+        <canvas id="attendanceStatusChart" width="200" height="80"></canvas>
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-header">Total Attendance per Subject</div>
+    <div class="card-body">
+        <canvas id="totalAttendanceChart" style="max-height: 250px; width: 100%;"></canvas>
+    </div>
+</div>
+
+@if (User.IsInRole("Admin"))
+{
+    <div class="card mt-4">
+        <div class="card-header">Average Attendance Rate per Subject</div>
+        <div class="card-body">
+            <canvas id="averageAttendanceChart" width="500" height="300"></canvas>
+        </div>
+    </div>
+}
+
+<div class="card mt-4">
+    <div class="card-header">Attendance Trend Over Time</div>
+    <div class="card-body">
+        <canvas id="attendanceTrendChart" width="800" height="300"></canvas>
+    </div>
+</div>
+
+<div id="studentAttendanceChartContainer" class="card mt-4" style="display:none;">
+    <div class="card-header">Student Attendance Percentage</div>
+    <div class="card-body">
+        <canvas id="studentAttendanceChart" width="800" height="400"></canvas>
+    </div>
+</div>
+
+@if (User.IsInRole("Admin"))
+{
+    <div class="card mt-4">
+        <div class="card-header">Attendance Distribution by Day of Week</div>
+        <div class="card-body">
+            <canvas id="attendanceDistributionChart"></canvas>
+        </div>
+    </div>
+}
+
+
+
+
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script>
+        let attendanceStatusChart;
+        let totalAttendanceChart;
+        let attendanceTrendChart;
+        let averageAttendanceChart;
+        let studentAttendanceChart;
+        let attendanceDistributionChart;
+
+        function destroyChart(chart) {
+            if (chart) {
+                chart.destroy();
+            }
+        }
+
+        // Attendance Status Chart
+        function loadAttendanceStatusChart(data) {
+            destroyChart(attendanceStatusChart);
+
+            const labels = data.map(d => d.subjectName);
+            const presentData = data.map(d => d.presentCount);
+            const absentData = data.map(d => d.absentCount);
+
+            const ctx = document.getElementById('attendanceStatusChart').getContext('2d');
+            attendanceStatusChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Present',
+                            backgroundColor: 'rgba(75, 192, 192, 0.7)',
+                            data: presentData
+                        },
+                        {
+                            label: 'Absent',
+                            backgroundColor: 'rgba(255, 99, 132, 0.7)',
+                            data: absentData
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: { beginAtZero: true }
                     }
                 }
-            </select>
-        </div>
-
-        <div style="margin-bottom: 10px;">
-            <label>Select Date:</label>
-            <select id="dateFilter" style="width: 200px; margin-left: 10px;">
-                <option value="">-- Select Date --</option>
-            </select>
-
-            <button id="applyBtn" onclick="refreshCharts()" class="btn btn-primary" style="margin-left: 10px;" disabled>Apply</button>
-        </div>
-    </div>
-
-    <!-- Charts -->
-    <div class="row">
-        <div class="col-md-6">
-            <h4>Attendance Status per Subject</h4>
-            <canvas id="attendanceStatusChart"></canvas>
-        </div>
-        <div class="col-md-6">
-            <h4>Total Attendance per Subject</h4>
-            <canvas id="totalAttendanceChart"></canvas>
-        </div>
-    </div>
-</div>
-
-<!-- Scripts -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-
-<!-- Add this to your Insights.cshtml file, below the existing charts -->
-<div class="row mt-4">
-    <!-- Student Attendance Distribution -->
-    <div class="col-md-6">
-        <h4>Student Attendance Distribution</h4>
-        <canvas id="attendanceDistributionChart"></canvas>
-    </div>
-
-    <!-- Professor Performance (Admin only) -->
-    @if (User.IsInRole("Admin"))
-    {
-        <div class="col-md-6">
-            <h4>Professor Performance</h4>
-            <canvas id="professorPerformanceChart"></canvas>
-        </div>
-    }
-</div>
-
-<div class="row mt-4">
-    <!-- Student Attendance Breakdown -->
-    <div class="col-md-6">
-        <h4>Top/Bottom Performing Students</h4>
-        <div class="form-check form-check-inline">
-            <input class="form-check-input" type="radio" name="studentPerformanceFilter" id="topStudents" value="top" checked>
-            <label class="form-check-label" for="topStudents">Top 5</label>
-        </div>
-        <div class="form-check form-check-inline">
-            <input class="form-check-input" type="radio" name="studentPerformanceFilter" id="bottomStudents" value="bottom">
-            <label class="form-check-label" for="bottomStudents">Bottom 5</label>
-        </div>
-        <canvas id="studentPerformanceChart"></canvas>
-    </div>
-
-    <!-- Attendance Trend Over Time -->
-    <div class="col-md-6">
-        <h4>Attendance Trend Over Time</h4>
-        <canvas id="attendanceTrendChart"></canvas>
-    </div>
-</div>
-
-<!-- Add this JavaScript -->
-<script>
-    // Initialize charts
-    let attendanceChart = null;
-    let totalChart = null;
-    let distributionChart = null;
-    let professorChart = null;
-    let studentPerformanceChart = null;
-    let trendChart = null;
-
-    $(document).ready(function () {
-        // Initialize Select2
-        $('#subjectFilter, #dateFilter, #professorFilter').select2();
-
-        // Load professors (for admins only)
-        if (@User.IsInRole("Admin").ToString().ToLower()) {
-            fetch('@Url.Action("GetProfessors", "Insights")')
-                .then(res => res.json())
-                .then(professors => {
-                    $('#professorFilter').append(new Option('-- All Professors --', ''));
-                    professors.forEach(p => {
-                        $('#professorFilter').append(new Option(p.name, p.id));
-                    });
-                    $('#professorFilter').trigger('change');
-                })
-                .catch(error => console.error('Error loading professors:', error));
-
-            $('#professorFilter').on('change', function() {
-                loadSubjects($(this).val());
             });
-        } else {
-            // For non-admins, load only their subjects
-            loadSubjects('@UserManager.GetUserId(User)');
         }
 
-        // Subject filter change handler
-        $('#subjectFilter').on('change', function() {
-            loadAvailableDates();
-            refreshCharts();
-        });
+        // Total Attendance Chart
+        function loadTotalAttendanceChart(data) {
+            destroyChart(totalAttendanceChart);
 
-        // Date filter change handler
-        $('#dateFilter').on('change', refreshCharts);
+            const labels = data.map(d => d.subjectName);
+            const totalData = data.map(d => d.presentCount + d.absentCount);
 
-        // Time period change handler (for trend chart)
-        $('#timePeriod').on('change', refreshCharts);
+            const ctx = document.getElementById('totalAttendanceChart').getContext('2d');
+            totalAttendanceChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Total Attendance',
+                        data: totalData,
+                        backgroundColor: 'rgba(54, 162, 235, 0.7)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
 
-        // Student performance filter handler
-        $('input[name="studentPerformanceFilter"]').change(function() {
-            loadStudentPerformanceChart($(this).val());
-        });
-    });
-
-    function loadSubjects(professorId) {
-        let url = '/Insights/GetSubjects';
-        if (professorId) url += `?professorId=${professorId}`;
-
-        $('#applyBtn').prop('disabled', true);
-
-        fetch(url)
-            .then(res => res.json())
-            .then(subjects => {
-                $('#subjectFilter').empty();
-                subjects.forEach(s => {
-                    // FIXED: Changed subjectID to subjectId
-                    $('#subjectFilter').append(new Option(s.name, s.subjectId));
-                });
-                $('#subjectFilter').trigger('change');
-            })
-            .catch(error => {
-                console.error('Error loading subjects:', error);
-                $('#applyBtn').prop('disabled', false);
-            });
-    }
-
-        async function loadAvailableDates() {
-        const subjectIds = $('#subjectFilter').val() || [];
-        if (subjectIds.length === 0) {
-            $('#dateFilter').empty().append('<option value="">-- Select Date --</option>');
-            return;
-        }
-
-        try {
-            // FIX 1: Use proper parameter formatting for multiple subject IDs
-            const params = new URLSearchParams();
-            params.append('subjectIds', subjectIds.join(',')); // Send as comma-separated string
-
-            const dates = await fetch(`/Insights/GetAvailableDates?${params.toString()}`)
-                .then(res => {
-                    if (!res.ok) throw new Error('Network response was not ok');
-                    return res.json();
-                });
-
-            // FIX 2: Verify date format from server
-            console.log('Received dates:', dates); // Check in browser console
-
-            const dateFilter = $('#dateFilter');
-            dateFilter.empty().append('<option value="">-- Select Date --</option>');
-
-            // FIX 3: Proper date handling
-            dates.forEach(dateStr => {
-                // Convert to Date object
-                const date = new Date(dateStr);
-
-                // FIX 4: Handle invalid dates
-                if (isNaN(date)) {
-                    console.warn('Invalid date:', dateStr);
-                    return;
                 }
-
-                const dateString = date.toLocaleDateString('en-US', {
-                    weekday: 'long',
-                    year: 'numeric',
-                    month: 'short',
-                    day: 'numeric'
-                });
-
-                // Store ISO string in value, display formatted date
-                dateFilter.append(new Option(dateString, date.toISOString()));
             });
-
-            $('#dateFilter').trigger('change');
-        } catch (error) {
-            console.error('Error loading dates:', error);
-            // FIX 5: Show error to user
-            $('#dateFilter').html('<option value="">Error loading dates</option>');
         }
-    }
 
-    // FIX 6: Update query parameter builder
-    function buildQueryParams(subjectIds, selectedDate = null) {
-        const params = new URLSearchParams();
-        if (subjectIds.length > 0) {
-            params.append('subjectIds', subjectIds.join(','));
+        // Attendance Trend Chart
+        function destroyTrendChart() {
+            if (attendanceTrendChart) {
+                attendanceTrendChart.destroy();
+            }
         }
-        if (selectedDate) {
-            // Ensure date is in ISO format
-            params.append('date', new Date(selectedDate).toISOString());
+
+        function loadAttendanceTrendChart(data) {
+            destroyTrendChart();
+
+            const labels = data.map(d => d.date);
+            const presentData = data.map(d => d.presentCount);
+            const absentData = data.map(d => d.absentCount);
+
+            const ctx = document.getElementById('attendanceTrendChart').getContext('2d');
+            attendanceTrendChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Present',
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            data: presentData,
+                            fill: true,
+                            tension: 0.3
+                        },
+                        {
+                            label: 'Absent',
+                            borderColor: 'rgba(255, 99, 132, 1)',
+                            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                            data: absentData,
+                            fill: true,
+                            tension: 0.3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
         }
-        return params.toString();
-    }
 
-    async function refreshCharts() {
-        const subjectIds = $('#subjectFilter').val() || [];
-        const selectedDate = $('#dateFilter').val();
+        // Average Attendance Chart
+        function loadAverageAttendanceChart(data) {
+            if (averageAttendanceChart) averageAttendanceChart.destroy();
 
-        try {
-            if (subjectIds.length === 0) {
-                clearCharts();
+            const labels = data.map(d => d.subjectName);
+            const rates = data.map(d => parseFloat(d.attendanceRate.toFixed(2)));
+
+            const ctx = document.getElementById('averageAttendanceChart').getContext('2d');
+            averageAttendanceChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Avg Attendance (%)',
+                        data: rates,
+                        fill: false,
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        tension: 0.3,
+                        pointRadius: 5,
+                        pointHoverRadius: 7
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    aspectRatio: 2.5,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            title: { display: true, text: 'Attendance %' },
+                            ticks: { callback: value => value + '%' }
+                        },
+                        x: {
+                            title: { display: true, text: 'Subject' }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: { label: ctx => ctx.parsed.y.toFixed(2) + '%' }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Student Attendance Chart
+        function loadStudentAttendanceChart(data) {
+            if (studentAttendanceChart) studentAttendanceChart.destroy();
+
+            if (!data || data.length === 0) {
+                $('#studentAttendanceChartContainer').hide();
                 return;
             }
 
-            const queryString = buildQueryParams(subjectIds, selectedDate);
+            $('#studentAttendanceChartContainer').show();
 
-            // FIXED: Added default filter type for student performance
-            const filterType = $('input[name="studentPerformanceFilter"]:checked').val() || 'top';
+            const labels = data.map(d => d.studentName);
+            const rates = data.map(d => parseFloat(d.attendanceRate.toFixed(2)));
 
-            await Promise.all([
-                loadMainCharts(queryString),
-                loadDistributionChart(queryString),
-                loadStudentPerformanceChart(filterType, queryString),
-                loadTrendChart(queryString),
-                // FIXED: Removed server-side role check from client code
-            ]);
-
-            $('#applyBtn').prop('disabled', false);
-        } catch (error) {
-            console.error('Error refreshing charts:', error);
-            $('#applyBtn').prop('disabled', false);
-        }
-    }
-
-    function clearCharts() {
-        const chartIds = [
-            'attendanceStatusChart',
-            'totalAttendanceChart',
-            'attendanceDistributionChart',
-            'studentPerformanceChart',
-            'attendanceTrendChart',
-            'professorPerformanceChart'
-        ];
-
-        chartIds.forEach(chartId => {
-            const canvas = document.getElementById(chartId);
-            if (canvas) {
-                const ctx = canvas.getContext('2d');
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-                // FIXED: Preserve canvas elements
-                let messageEl = canvas.nextElementSibling;
-                if (!messageEl || messageEl.tagName !== 'P') {
-                    messageEl = document.createElement('p');
-                    messageEl.style.color = 'white';
-                    canvas.parentNode.insertBefore(messageEl, canvas.nextSibling);
+            const ctx = document.getElementById('studentAttendanceChart').getContext('2d');
+            studentAttendanceChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Student Attendance %',
+                        data: rates,
+                        fill: false,
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        tension: 0.3,
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    aspectRatio: 2.5,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            title: { display: true, text: 'Attendance %' },
+                            ticks: { callback: val => val + '%' }
+                        },
+                        x: {
+                            title: { display: true, text: 'Student' },
+                            ticks: {
+                                maxRotation: 90,
+                                minRotation: 45
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: ctx => {
+                                    const y = ctx.parsed.y;
+                                    return (y !== undefined && y !== null) ? y.toFixed(2) + '%' : '0.00%';
+                                }
+                            }
+                        }
+                    }
                 }
-                messageEl.textContent = 'No data available';
+            });
+        }
+
+        // Attendance Distribution by Day Chart
+        function loadAttendanceDistributionChart(data) {
+            if (attendanceDistributionChart) attendanceDistributionChart.destroy();
+
+            const labels = data.map(d => d.day);
+            const rates = data.map(d => parseFloat((d.attendanceRate ?? 0).toFixed(2)));
+
+            const ctx = document.getElementById('attendanceDistributionChart').getContext('2d');
+            attendanceDistributionChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Attendance %',
+                        data: rates,
+                        backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: { callback: value => value + '%' },
+                            title: { display: true, text: 'Attendance %' }
+                        },
+                        x: {
+                            title: { display: true, text: 'Day of Week' }
+                        }
+                    },
+                    responsive: true,
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: ctx => ctx.parsed.y.toFixed(2) + '%'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Fetch and Render charts (status + total) based on filters
+        function fetchAndRenderCharts() {
+            const subjectIds = $('#subjectFilter').val() || [];
+            const date = $('#dateFilter').val();
+
+            $.ajax({
+                url: '@Url.Action("GetAttendanceData", "Insights")',
+                type: 'GET',
+                traditional: true, // important for array param
+                data: {
+                    subjectIds: subjectIds,
+                    date: date || null
+                },
+                success: function (data) {
+                    loadAttendanceStatusChart(data);
+                    loadTotalAttendanceChart(data);
+                },
+                error: function () {
+                    alert('Error loading attendance status or total attendance data.');
+                }
+            });
+        }
+
+        // Update trend chart for first selected subject
+        function updateTrendChart() {
+            const selectedSubjects = $('#subjectFilter').val();
+
+            if (!selectedSubjects || selectedSubjects.length === 0) {
+                destroyTrendChart();
+                return;
             }
+
+            const subjectId = selectedSubjects[0];
+
+            $.ajax({
+                url: '@Url.Action("GetAttendanceTrend", "Insights")',
+                data: { subjectId: subjectId },
+                success: function (data) {
+                    loadAttendanceTrendChart(data);
+                },
+                error: function () {
+                    alert('Error loading attendance trend data.');
+                }
+            });
+        }
+
+        // Initial page setup and event bindings
+        $(document).ready(function () {
+            $('#subjectFilter').on('change', function () {
+                const selectedSubjects = $('#subjectFilter').val();
+
+                if (!selectedSubjects || selectedSubjects.length === 0) {
+                    $('#dateFilter').html('<option value="">All Dates</option>');
+                    fetchAndRenderCharts();
+                    destroyTrendChart();
+
+                    if (studentAttendanceChart) {
+                        studentAttendanceChart.destroy();
+                    }
+                    $('#studentAttendanceChartContainer').hide();
+                    return;
+                }
+
+                // Load available dates for the selected subjects
+                $.ajax({
+                    url: '@Url.Action("GetAvailableDates", "Insights")',
+                    type: 'GET',
+                    data: { subjectIds: selectedSubjects },
+                    traditional: true,
+                    success: function (dates) {
+                        let options = '<option value="">All Dates</option>';
+                        dates.forEach(function (date) {
+                            options += `<option value="${date}">${date}</option>`;
+                        });
+                        $('#dateFilter').html(options);
+
+                        fetchAndRenderCharts();
+                        updateTrendChart();
+
+                        // Load student attendance for first selected subject
+                        $.ajax({
+                            url: '@Url.Action("GetStudentAttendancePercentages", "Insights")',
+                            type: 'GET',
+                            data: { subjectId: selectedSubjects[0] },
+                            success: function (data) {
+                                if (document.getElementById('studentAttendanceChart')) {
+                                    loadStudentAttendanceChart(data);
+                                    $('#studentAttendanceChartContainer').show();
+                                }
+                            },
+                            error: function () {
+                                alert('Error loading student attendance data.');
+                                $('#studentAttendanceChartContainer').hide();
+                            }
+                        });
+                    },
+                    error: function () {
+                        alert('Failed to load available dates.');
+                    }
+                });
+            });
+
+            $('#dateFilter').on('change', fetchAndRenderCharts);
+
+            // Initial load of average attendance chart (global)
+            $.ajax({
+                url: '@Url.Action("GetAverageAttendanceRate", "Insights")',
+                type: 'GET',
+                success: function (data) {
+                    if (document.getElementById('averageAttendanceChart')) {
+                        loadAverageAttendanceChart(data);
+                    }
+                },
+                error: function () {
+                    alert('Error loading average attendance rate data.');
+                }
+            });
+
+            // Load attendance distribution by day (no filters)
+            $.ajax({
+                url: '@Url.Action("GetAttendanceDistributionByDay", "Insights")',
+                type: 'GET',
+                success: function (data) {
+                    if (document.getElementById('attendanceDistributionChart')) {
+                        loadAttendanceDistributionChart(data);
+                    }
+                },
+                error: function () {
+                    alert('Error loading attendance distribution data.');
+                }
+            });
+
+            // Initial load of filtered charts on page load
+            fetchAndRenderCharts();
+            updateTrendChart();
         });
-    }
 
-    async function loadMainCharts(queryString) {
-        const data = await fetch(`/Insights/GetAttendanceData?${queryString}`)
-            .then(res => res.json());
+    </script>
+}
 
-        if (attendanceChart) attendanceChart.destroy();
-        if (totalChart) totalChart.destroy();
 
-        if (data.length > 0) {
-            // FIXED: Use consistent subjectName property
-            const labels = data.map(d => d.subjectName);
-            const present = data.map(d => d.presentCount);
-            const absent = data.map(d => d.absentCount);
-            const totals = data.map(d => d.presentCount + d.absentCount);
 
-            // ... (keep chart initialization code unchanged) ...
-        } else {
-            // FIXED: Don't replace canvas, just clear it
-            clearCharts();
-        }
-    }
-
-    // ... (keep other chart loading functions mostly unchanged) ...
-
-    async function loadTrendChart(queryString) {
-        const data = await fetch(`/Insights/GetAttendanceTrend?${queryString}`)
-            .then(res => res.json());
-
-        if (trendChart) trendChart.destroy();
-
-        if (!data || data.length === 0) {
-            clearCharts();
-            return;
-        }
-
-        // FIXED: Proper date sorting
-        const labels = [...new Set(data.map(d => d.Date))]
-                     .sort((a, b) => new Date(a) - new Date(b));
-
-        // ... (rest of trend chart code remains same) ...
-    }
-
-    // Helper: Generate random pastel color for trend lines
-    function getRandomColor() {
-        const r = Math.floor(150 + Math.random() * 100);
-        const g = Math.floor(150 + Math.random() * 100);
-        const b = Math.floor(150 + Math.random() * 100);
-        return `rgba(${r},${g},${b},0.7)`;
-    }
-</script>
