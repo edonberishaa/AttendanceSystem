@@ -32,7 +32,6 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.LoginPath = "/Account/Login";
     options.Cookie.HttpOnly = true;
     options.ExpireTimeSpan = TimeSpan.FromMinutes(90);
-    options.SlidingExpiration = false;
     options.Cookie.IsEssential = true;
     options.AccessDeniedPath = "/Account/AccessDenied";
     options.SlidingExpiration = true;
@@ -47,7 +46,7 @@ builder.Services.AddSwaggerGen(options =>
     {
         Title = "Attendance System API",
         Version = "v1",
-        Description = "An API for managing attendance sessions, professors, students, and Arduino integration. ",
+        Description = "An API for managing attendance sessions, professors, students, and Arduino integration.",
         Contact = new Microsoft.OpenApi.Models.OpenApiContact
         {
             Name = "Edon Berisha",
@@ -67,6 +66,7 @@ builder.Services.AddSession(options =>
 });
 
 var app = builder.Build();
+
 app.UseSwagger();
 app.UseSwaggerUI(options =>
 {
@@ -74,7 +74,8 @@ app.UseSwaggerUI(options =>
     options.RoutePrefix = "swagger";
 });
 
-using(var scope = app.Services.CreateScope())
+// Initialize roles (ensure this method exists and works)
+using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     await RoleInitializer.InitializeAsync(services);
@@ -96,13 +97,11 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapStaticAssets();
 app.MapHub<ArduinoHub>("/ArduinoHub");
 
 // Default Route
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}")
-    .WithStaticAssets();
+    pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Run();

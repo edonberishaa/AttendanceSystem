@@ -1,136 +1,238 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
+using System.Security.Claims;
 using AttendanceSystem.Data;
-using AttendanceSystem.Models;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
+
 
 namespace AttendanceSystem.Controllers
 {
     public class InsightsController : Controller
     {
-        private readonly UserManager<ApplicationUser> _userManager;
         private readonly AppDbContext _context;
 
-        public InsightsController(UserManager<ApplicationUser> userManager, AppDbContext context)
+        public InsightsController(AppDbContext context)
         {
-            _userManager = userManager;
             _context = context;
         }
 
-        public async Task<IActionResult> Index()
+        public IActionResult Index()
         {
-            var user = await _userManager.GetUserAsync(User);
-            var isAdmin = await _userManager.IsInRoleAsync(user, "Admin");
-
-            List<Subject> subjects;
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var isAdmin = User.IsInRole("Admin");
 
             if (isAdmin)
             {
-                subjects = await _context.Subjects.ToListAsync();
+                ViewBag.Subjects = _context.Subjects.ToList();
             }
             else
             {
-                subjects = await _context.Subjects
-                    .Where(s => s.ProfessorID == user.Id)
-                    .ToListAsync();
+                ViewBag.Subjects = _context.Subjects
+                    .Where(s => s.ProfessorID == userId)
+                    .ToList();
             }
 
-            return View("Insights", subjects);
+            ViewBag.Dates = _context.Attendances
+                .Select(a => a.LessonDate.Date)
+                .Distinct()
+                .OrderByDescending(d => d)
+                .ToList();
+
+            return View("Insights");
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetProfessors()
-        {
-            var professors = await _userManager.GetUsersInRoleAsync("Professor");
-
-            var result = professors.Select(p => new
-            {
-                id = p.Id,
-                name = p.FullName // match this to the "FullName" column
-            });
-
-            return Json(result);
-        }
 
         [HttpGet]
-        public async Task<IActionResult> GetSubjects(string professorId = null)
+        public JsonResult GetAttendanceData(List<int> subjectIds, DateTime? date)
         {
-            var query = _context.Subjects.AsQueryable();
+            var query = _context.Attendances
+                .Include(a => a.Subject)
+                .AsQueryable();
 
-            if (!string.IsNullOrEmpty(professorId))
+            if (subjectIds != null && subjectIds.Any())
             {
-                query = query.Where(s => s.ProfessorID == professorId);
-            }
-
-            var subjects = await query.ToListAsync();
-            return Json(subjects.Select(s => new { SubjectID = s.SubjectID, Name = s.SubjectName }));
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> GetAttendanceData(
-            [FromQuery] List<int> subjectIds,
-            [FromQuery] DateTime? date)
-        {
-            var user = await _userManager.GetUserAsync(User);
-            var isAdmin = await _userManager.IsInRoleAsync(user, "Admin");
-
-            var query = _context.Attendances.AsQueryable();
-
-            // Role-based filtering
-            if (!isAdmin)
-            {
-                // Professor: Only their subjects
-                var professorSubjects = await _context.Subjects
-                    .Where(s => s.ProfessorID == user.Id)
-                    .Select(s => s.SubjectID)
-                    .ToListAsync();
-
-                subjectIds = subjectIds.Any()
-                    ? subjectIds.Intersect(professorSubjects).ToList()
-                    : professorSubjects;
-
-                query = query.Where(a => subjectIds.Contains(a.SubjectID));
-            }
-            else if (subjectIds.Any())
-            {
-                // Admin: Filter by selected subjects
                 query = query.Where(a => subjectIds.Contains(a.SubjectID));
             }
 
-            // Date filter
             if (date.HasValue)
             {
-                query = query.Where(a => a.LessonDate == date.Value);
+                query = query.Where(a => a.LessonDate.Date == date.Value.Date);
             }
 
-            var result = await query
-                .GroupBy(a => a.SubjectID)
+            var groupedData = query
+                .GroupBy(a => a.Subject)
                 .Select(g => new
                 {
-                    SubjectId = g.Key,
-                    PresentCount = g.Count(a => a.Present),
-                    AbsentCount = g.Count(a => !a.Present)
+                    subjectName = g.Key.SubjectName,
+                    presentCount = g.Count(r => r.Present),
+                    absentCount = g.Count(r => !r.Present)
                 })
-                .ToListAsync();
+                .ToList();
 
-            return Json(result);
+            return Json(groupedData);
         }
 
+
+
         [HttpGet]
-        public async Task<IActionResult> GetAvailableDates([FromQuery] List<int> subjectIds)
+        public JsonResult GetAvailableDates([FromQuery] List<int> subjectIds)
         {
-            var dates = await _context.Attendances
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var isAdmin = User.IsInRole("Admin");
+
+            var query = _context.Attendances
+                .Include(a => a.Subject)
+                .AsQueryable();
+
+            if (!isAdmin)
+            {
+                query = query.Where(a => a.Subject.ProfessorID == userId);
+            }
+
+            var dates = query
                 .Where(a => subjectIds.Contains(a.SubjectID))
-                .Select(a => a.LessonDate)
+                .Select(a => a.LessonDate.Date)
                 .Distinct()
-                .OrderBy(d => d)
-                .ToListAsync();
+                .OrderByDescending(d => d)
+                .ToList();
 
             return Json(dates);
         }
+
+        [HttpGet]
+        public JsonResult GetAttendanceTrend(int subjectId)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var isAdmin = User.IsInRole("Admin");
+
+            var query = _context.Attendances
+                .Include(a => a.Subject)
+                .Where(a => a.SubjectID == subjectId);
+
+            if (!isAdmin)
+            {
+                query = query.Where(a => a.Subject.ProfessorID == userId);
+            }
+
+            var trendData = query
+                .GroupBy(a => a.LessonDate.Date)
+                .OrderBy(g => g.Key)
+                .Select(g => new
+                {
+                    date = g.Key.ToString("yyyy-MM-dd"),
+                    presentCount = g.Count(r => r.Present),
+                    absentCount = g.Count(r => !r.Present)
+                })
+                .ToList();
+
+            return Json(trendData);
+        }
+
+        [HttpGet]
+        public JsonResult GetAverageAttendanceRate([FromQuery] List<int> subjectIds)
+        {
+            try
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                var isAdmin = User.IsInRole("Admin");
+                var query = _context.Attendances
+                    .Include(a => a.Subject)
+                    .AsQueryable();
+
+                if (!isAdmin)
+                {
+                    query = query.Where(a => a.Subject.ProfessorID == userId);
+                }
+
+                if (subjectIds != null && subjectIds.Any())
+                {
+                    query = query.Where(a => subjectIds.Contains(a.SubjectID));
+                }
+
+                var result = query
+                    .GroupBy(a => a.Subject)
+                    .Select(g => new
+                    {
+                        subjectName = g.Key.SubjectName,
+                        attendanceRate = g.Count(a => a.Present) * 100.0 / g.Count()
+                    })
+                    .OrderByDescending(x => x.attendanceRate)
+                    .ToList();
+
+                return Json(result);
+            }
+            catch (Exception ex)
+            {
+                return Json(new { error = ex.Message, stackTrace = ex.StackTrace });
+            }
+        }
+
+        [HttpGet]
+        public JsonResult GetStudentAttendancePercentages(int subjectId)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var isAdmin = User.IsInRole("Admin");
+
+            var query = _context.Attendances
+                .Include(a => a.Student)
+                .Include(a => a.Subject)
+                .Where(a => a.SubjectID == subjectId)
+                .AsQueryable();
+
+            if (!isAdmin)
+            {
+                query = query.Where(a => a.Subject.ProfessorID == userId);
+            }
+
+            var result = query
+                .GroupBy(a => new { a.StudentID, a.Student.Name })
+                .Select(g => new
+                {
+                    studentName = g.Key.Name,
+                    attendanceRate = g.Count(a => a.Present) * 100.0 / g.Count()
+                })
+                .OrderBy(x => x.studentName)
+                .ToList();
+
+            return Json(result);
+        }
+
+
+        [HttpGet]
+        public JsonResult GetAttendanceDistributionByDay()
+        {
+            try
+            {
+                var data = _context.Attendances
+                    .AsEnumerable()
+                    .GroupBy(a => a.LessonDate.DayOfWeek)
+                    .OrderBy(g => g.Key)
+                    .Select(g => new
+                    {
+                        Day = g.Key.ToString(),
+                        AttendanceRate = g.Count(a => a.Present) * 100.0 / g.Count()
+                    })
+                    .ToList();
+
+                return Json(data);
+            }
+            catch (Exception ex)
+            {
+                return Json(new { error = ex.Message });
+            }
+        }
+
+
+
+
+
+
+
+
+
     }
 }
+    
