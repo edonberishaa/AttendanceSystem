@@ -435,63 +435,124 @@ namespace AttendanceSystem.Controllers
 
         public IActionResult ExportAttendanceToExcel(int subjectId, DateTime? date = null)
         {
-            var professorEmail = User.Identity.Name;
-
+            var professorEmail = User.Identity?.Name;
             var professor = _context.Users.FirstOrDefault(u => u.Email == professorEmail);
             if (professor == null)
-            {
                 return NotFound("Professor not found.");
-            }
+
             var subject = _context.Subjects.FirstOrDefault(s => s.SubjectID == subjectId);
             if (subject == null)
-            {
-                return NotFound("Subject not found or not assigned to you!");
-            }
+                return NotFound("Subject not found or not assigned to you.");
 
-            var attendanceRecords = _context.Attendances
+            var attendanceQuery = _context.Attendances
                 .Where(a => a.SubjectID == subjectId)
                 .Include(a => a.Student)
                 .AsQueryable();
 
             if (date.HasValue)
             {
-                attendanceRecords = attendanceRecords.Where(a => a.LessonDate == date.Value.Date);
-            }
-            var records = attendanceRecords.ToList();
+                // === SINGLE DATE EXPORT ===
+                var records = attendanceQuery
+                    .Where(a => a.LessonDate.Date == date.Value.Date)
+                    .ToList();
 
-            if (!records.Any())
-            {
-                return NotFound("NO attendance records found for the selected week");
-            }
+                if (!records.Any())
+                    return NotFound("No attendance records found for the selected date.");
 
-            using (var workbook = new XLWorkbook())
-            {
+                using var workbook = new XLWorkbook();
                 var worksheet = workbook.Worksheets.Add("Attendance");
 
+                // Headers
                 worksheet.Cell(1, 1).Value = "Student Name";
                 worksheet.Cell(1, 2).Value = "Date";
                 worksheet.Cell(1, 3).Value = "Attendance Status";
 
+                // Rows
                 int row = 2;
                 foreach (var record in records)
                 {
                     worksheet.Cell(row, 1).Value = record.Student.Name;
                     worksheet.Cell(row, 2).Value = record.LessonDate.ToString("dd/MM/yyyy");
-                    worksheet.Cell(row, 3).Value = record.Present ? "1" : "0";
+                    worksheet.Cell(row, 3).Value = record.Present ? 1 : 0;
                     row++;
                 }
+
                 worksheet.Columns().AdjustToContents();
 
-                using (var stream = new MemoryStream())
+                using var stream = new MemoryStream();
+                workbook.SaveAs(stream);
+                return File(
+                    stream.ToArray(),
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    $"Attendance_{date.Value:yyyy-MM-dd}_{subject.SubjectName}.xlsx"
+                );
+            }
+            else
+            {
+                // === ALL DATES EXPORT ===
+                var allRecords = attendanceQuery.ToList();
+
+                if (!allRecords.Any())
+                    return NotFound("No attendance records found.");
+
+                // Extract all distinct dates
+                var allDates = allRecords
+                    .Select(a => a.LessonDate.Date)
+                    .Distinct()
+                    .OrderBy(d => d)
+                    .ToList();
+
+                var students = allRecords
+                    .Select(a => a.Student)
+                    .Distinct()
+                    .OrderBy(s => s.Name)
+                    .ToList();
+
+                using var workbook = new XLWorkbook();
+                var worksheet = workbook.Worksheets.Add("Attendance");
+
+                // Headers: Student Name + Dates + Percentage
+                worksheet.Cell(1, 1).Value = "Student Name";
+                for (int i = 0; i < allDates.Count; i++)
                 {
-                    workbook.SaveAs(stream);
-                    var content = stream.ToArray();
-                    return File(
-                        content,
-                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                        $"Attendance_{(date.HasValue ? date.Value.ToString("yyyy-MM-dd") : "AllDates")}_{subject.SubjectName}.xlsx"
-                        );
+                    worksheet.Cell(1, i + 2).Value = allDates[i].ToString("dd/MM/yyyy");
                 }
+                worksheet.Cell(1, allDates.Count + 2).Value = "Attendance in percentage";
+                // Fill attendance per student per date
+                int row = 2;
+                foreach (var student in students)
+                {
+                    worksheet.Cell(row, 1).Value = student.Name;
+
+                    int attendanceCount = 0;
+
+                    for (int col = 0; col < allDates.Count; col++)
+                    {
+                        var dateItem = allDates[col];
+                        var attendance = allRecords.FirstOrDefault(a =>
+                            a.Student.StudentID == student.StudentID &&
+                            a.LessonDate.Date == dateItem);
+
+                        bool present = attendance?.Present == true;
+                        worksheet.Cell(row, col + 2).Value = present ? 1 : 0;
+
+                        if (present) attendanceCount++;
+                    }
+                    double percentage = (double)attendanceCount / allDates.Count * 100;
+                    worksheet.Cell(row, allDates.Count + 2).Value = $"{percentage:F2}%";
+
+                    row++;
+                }
+
+                worksheet.Columns().AdjustToContents();
+
+                using var stream = new MemoryStream();
+                workbook.SaveAs(stream);
+                return File(
+                    stream.ToArray(),
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    $"Attendance_AllDates_{subject.SubjectName}.xlsx"
+                );
             }
         }
 
