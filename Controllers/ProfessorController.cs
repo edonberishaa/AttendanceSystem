@@ -489,7 +489,7 @@ namespace AttendanceSystem.Controllers
                     return File(
                         content,
                         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                        $"Attendance_Date{date}_{subject.SubjectName}.xlsx"
+                        $"Attendance_{(date.HasValue ? date.Value.ToString("yyyy-MM-dd") : "AllDates")}_{subject.SubjectName}.xlsx"
                         );
                 }
             }

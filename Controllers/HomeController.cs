@@ -27,11 +27,13 @@ namespace AttendanceSystem.Controllers
                 .Where(user => _context.UserRoles
                     .Any(role => role.UserId == user.Id && role.RoleId == _context.Roles.FirstOrDefault(r => r.Name == "Professor").Id))
                 .Count();
+            var subjectsCount = _context.Subjects.Count();
 
             var model = new
             {
                 StudentsCount = studentsCount,
-                ProfessorsCount = professorsCount
+                ProfessorsCount = professorsCount,
+                SubjectsCount = subjectsCount
             };
 
             return View(model);
