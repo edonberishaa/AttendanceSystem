@@ -10,7 +10,6 @@ namespace AttendanceSystem.Models
         public bool IsActive { get; set; } // Indicates if the session is active
         public DateTime StartDate { get; set; } // Start date of the session
         public DateTime? EndDate { get; set; } // End date of the session (nullable)
-
         public virtual Subject Subject { get; set; }
     }
 }
